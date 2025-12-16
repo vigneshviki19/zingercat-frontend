@@ -1,21 +1,20 @@
-const API_BASE = "https://zingercat-backend.onrender.com/api";
+import axios from "axios";
 
-export async function getPosts() {
-  const res = await fetch(`${API_BASE}/posts`);
-  return res.json();
+const api = axios.create({
+  baseURL: "https://zingercat-backend.onrender.com/api",
+});
+
+export function getPosts() {
+  return api.get("/posts").then(res => res.data);
 }
 
-export async function createPost(content) {
+export function createPost(content) {
   const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API_BASE}/posts`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ content })
-  });
-
-  return res.json();
+  return api.post(
+    "/posts",
+    { content },
+    { headers: { Authorization: `Bearer ${token}` } }
+  ).then(res => res.data);
 }
+
+export default api;
