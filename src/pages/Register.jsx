@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -8,22 +7,25 @@ export default function Register() {
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
-    e.preventDefault(); // 🔥 VERY IMPORTANT
+    e.preventDefault();
 
     try {
-      const res = await api.post("/auth/register", {
-        email,
-        password,
-      });
+      const res = await fetch(
+        "https://zingercat-backend.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-      if (res.data.success) {
-        navigate("/"); // redirect to home
+      if (res.ok) {
+        navigate("/login");
       } else {
         alert("Register failed");
       }
     } catch (err) {
       alert("Register failed");
-      console.error(err);
     }
   };
 
@@ -33,7 +35,6 @@ export default function Register() {
 
       <input
         type="email"
-        placeholder="College Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -41,7 +42,6 @@ export default function Register() {
 
       <input
         type="password"
-        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
