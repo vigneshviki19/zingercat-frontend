@@ -1,41 +1,39 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  async function handleSubmit(e) {
-    e.preventDefault(); // 🔥 MUST
+  const handleRegister = async (e) => {
+    e.preventDefault(); // 🔥 VERY IMPORTANT
 
-    console.log("Register clicked"); // 🔥 DEBUG
+    try {
+      const res = await api.post("/auth/register", {
+        email,
+        password,
+      });
 
-    const res = await fetch(
-      "https://zingercat-backend.onrender.com/api/auth/register",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      if (res.data.success) {
+        navigate("/"); // redirect to home
+      } else {
+        alert("Register failed");
       }
-    );
-
-    console.log("Response status:", res.status);
-
-    const data = await res.json();
-    console.log("Response data:", data);
-
-    if (res.ok) {
-      navigate("/");
-    } else {
+    } catch (err) {
       alert("Register failed");
+      console.error(err);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleRegister}>
+      <h1>Join Zinger Cat 🐱</h1>
+
       <input
         type="email"
+        placeholder="College Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -43,14 +41,13 @@ export default function Register() {
 
       <input
         type="password"
+        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
 
-      <button type="submit">
-        Become a Zinger Cat 🐱
-      </button>
+      <button type="submit">Become a Zinger Cat 🐱</button>
     </form>
   );
 }
