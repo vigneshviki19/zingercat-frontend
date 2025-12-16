@@ -11,7 +11,7 @@ export default function Feed() {
 
   async function loadPosts() {
     const data = await getPosts();
-    setPosts(data);
+    setPosts(data || []);
   }
 
   async function handlePost() {
@@ -23,14 +23,12 @@ export default function Feed() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "auto" }}>
-      <h2>Hello, Cat 🐾</h2>
-
+    <div style={{ maxWidth: 600, margin: "20px auto" }}>
       <textarea
         placeholder="Speak your mind..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        style={{ width: "100%", height: 80 }}
+        style={{ width: "100%", height: 80, marginBottom: 10 }}
       />
 
       <button onClick={handlePost}>Post 🐱</button>
@@ -40,7 +38,7 @@ export default function Feed() {
       {posts.length === 0 && <p>No posts yet.</p>}
 
       {posts.map((post) => (
-        <div key={post._id} style={{ padding: 10, borderBottom: "1px solid #ddd" }}>
+        <div key={post._id} style={{ marginBottom: 12 }}>
           <strong>{post.author}</strong>
           <p>{post.content}</p>
           <small>{new Date(post.createdAt).toLocaleString()}</small>
