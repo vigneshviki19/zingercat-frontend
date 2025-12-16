@@ -19,9 +19,52 @@ export default function Login() {
 
       navigate("/home");
     } catch (err) {
-      alert("Meow! Wrong details 😿");
+      alert("Meow 😿 Wrong whiskers!");
     }
   };
 
-  // UI stays SAME as before
+  return (
+    <div style={styles.container}>
+      <h1>Welcome back, Chief Cat 🐱</h1>
+      <p>Scratch less, post more.</p>
+
+      <input
+        placeholder="Cat Email 🐾"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={styles.input}
+      />
+
+      <input
+        type="password"
+        placeholder="Secret Meow 🤫"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={styles.input}
+      />
+
+      <button onClick={handleLogin} style={styles.button}>
+        Enter the Litter 🐾
+      </button>
+    </div>
+  );
 }
+
+const styles = {
+  container: {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "12px",
+  },
+  input: {
+    padding: "10px",
+    width: "250px",
+  },
+  button: {
+    padding: "10px 20px",
+    cursor: "pointer",
+  },
+};
