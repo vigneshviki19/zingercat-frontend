@@ -1,6 +1,7 @@
 export default function Home() {
   // temporary username (later comes from backend)
-  const username = "ZC_BlackCat482";
+  const username = localStorage.getItem("username");
+
 
   return (
     <div style={container}>
