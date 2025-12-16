@@ -8,7 +8,6 @@ export default function Home() {
       <h2>🐱 Zinger Cat</h2>
       <p>Welcome back, <b>{username}</b></p>
 
-      {/* THIS shows textarea */}
       <Feed />
     </div>
   );
