@@ -19,9 +19,52 @@ export default function Register() {
 
       navigate("/home");
     } catch (err) {
-      alert("Meow! Something went wrong 😿");
+      alert("Meow 😿 Could not join the pride!");
     }
   };
 
-  // UI stays SAME as before
+  return (
+    <div style={styles.container}>
+      <h1>Join Zinger Cat 🐱</h1>
+      <p>Every cat deserves a voice.</p>
+
+      <input
+        placeholder="Cat Email 🐾"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={styles.input}
+      />
+
+      <input
+        type="password"
+        placeholder="Create Secret Meow 🤫"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={styles.input}
+      />
+
+      <button onClick={handleRegister} style={styles.button}>
+        Become a Zinger Cat 😼
+      </button>
+    </div>
+  );
 }
+
+const styles = {
+  container: {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "12px",
+  },
+  input: {
+    padding: "10px",
+    width: "250px",
+  },
+  button: {
+    padding: "10px 20px",
+    cursor: "pointer",
+  },
+};
