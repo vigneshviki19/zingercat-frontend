@@ -27,10 +27,11 @@ export default function Feed() {
       <h2>Hello, Cat 🐾</h2>
 
       <textarea
-  onChange={(e) => alert(e.target.value)}
-  style={{ width: "100%", height: 80 }}
-/>
-
+        placeholder="Speak your mind..."
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        style={{ width: "100%", height: 80 }}
+      />
 
       <button onClick={handlePost}>Post 🐱</button>
 
