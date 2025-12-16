@@ -1,70 +1,56 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = async () => {
-    try {
-      const res = await axios.post(
-        "https://zingercat-backend.onrender.com/api/auth/register",
-        { email, password }
-      );
+  async function handleSubmit(e) {
+    e.preventDefault(); // 🔥 MUST
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", res.data.username);
+    console.log("Register clicked"); // 🔥 DEBUG
 
-      navigate("/home");
-    } catch (err) {
-      alert("Meow 😿 Could not join the pride!");
+    const res = await fetch(
+      "https://zingercat-backend.onrender.com/api/auth/register",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }
+    );
+
+    console.log("Response status:", res.status);
+
+    const data = await res.json();
+    console.log("Response data:", data);
+
+    if (res.ok) {
+      navigate("/");
+    } else {
+      alert("Register failed");
     }
-  };
+  }
 
   return (
-    <div style={styles.container}>
-      <h1>Join Zinger Cat 🐱</h1>
-      <p>Every cat deserves a voice.</p>
-
+    <form onSubmit={handleSubmit}>
       <input
-        placeholder="Cat Email 🐾"
+        type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        style={styles.input}
+        required
       />
 
       <input
         type="password"
-        placeholder="Create Secret Meow 🤫"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        style={styles.input}
+        required
       />
 
-      <button onClick={handleRegister} style={styles.button}>
-        Become a Zinger Cat 😼
+      <button type="submit">
+        Become a Zinger Cat 🐱
       </button>
-    </div>
+    </form>
   );
 }
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "12px",
-  },
-  input: {
-    padding: "10px",
-    width: "250px",
-  },
-  button: {
-    padding: "10px 20px",
-    cursor: "pointer",
-  },
-};
