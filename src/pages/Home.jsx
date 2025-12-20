@@ -7,7 +7,6 @@ export default function Home() {
     <div style={{ padding: 20 }}>
       <h2>🐱 Zinger Cat</h2>
       <p>Welcome back, <b>{username}</b></p>
-
       <Feed />
     </div>
   );
