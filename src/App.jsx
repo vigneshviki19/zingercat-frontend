@@ -32,7 +32,7 @@ export default function App() {
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+    </Routes>
     </BrowserRouter>
   );
 }
