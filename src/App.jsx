@@ -1,26 +1,37 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
+  const isLoggedIn = !!localStorage.getItem("token");
+
   return (
     <BrowserRouter>
       <Routes>
+        {/* Landing page */}
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
+        {/* Auth pages */}
+        <Route
+          path="/login"
+          element={isLoggedIn ? <Navigate to="/home" /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={isLoggedIn ? <Navigate to="/home" /> : <Register />}
+        />
+
+        {/* Protected Home */}
         <Route
           path="/home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
+          element={isLoggedIn ? <Home /> : <Navigate to="/login" />}
         />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
