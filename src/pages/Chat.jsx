@@ -6,6 +6,7 @@ const socket = io("https://zingercat-backend.onrender.com");
 export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const username = localStorage.getItem("username") || "Anonymous";
 
   useEffect(() => {
     socket.on("receiveMessage", (msg) => {
@@ -17,22 +18,32 @@ export default function Chat() {
 
   const sendMessage = () => {
     if (!message.trim()) return;
-    socket.emit("sendMessage", message);
+
+    socket.emit("sendMessage", {
+      user: username,
+      text: message,
+    });
+
     setMessage("");
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h2>🐱 Live Chat</h2>
+    <div style={{ maxWidth: 600, margin: "20px auto" }}>
+      <h2>🐱 Zinger Live Chat</h2>
 
-      <div style={{
-        height: 300,
-        border: "1px solid #ccc",
-        overflowY: "auto",
-        padding: 10
-      }}>
+      <div
+        style={{
+          height: 300,
+          border: "1px solid #ccc",
+          padding: 10,
+          overflowY: "auto",
+          marginBottom: 10,
+        }}
+      >
         {messages.map((m, i) => (
-          <p key={i}>{m}</p>
+          <p key={i}>
+            <strong>{m.user}:</strong> {m.text}
+          </p>
         ))}
       </div>
 
@@ -40,10 +51,11 @@ export default function Chat() {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type message..."
-        style={{ width: "100%", marginTop: 10 }}
+        style={{ width: "80%", padding: 8 }}
       />
-
-      <button onClick={sendMessage}>Send</button>
+      <button onClick={sendMessage} style={{ padding: 8 }}>
+        Send
+      </button>
     </div>
   );
 }
