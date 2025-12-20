@@ -1,49 +1,45 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Landing() {
+  const navigate = useNavigate();
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        textAlign: "center",
-        padding: 20
-      }}
-    >
-      {/* Logo placeholder */}
-      <div style={{ fontSize: 60, marginBottom: 10 }}>🐱</div>
+    <div style={container}>
+      <h1>🐱 Zinger Cat</h1>
+      <p>A safe college community</p>
 
-      <h1 style={{ fontSize: 36, marginBottom: 10 }}>Zinger Cat</h1>
+      <button style={btn} onClick={() => navigate("/register")}>
+        New User? Sign Up
+      </button>
 
-      <p style={{ maxWidth: 400, color: "#555", marginBottom: 30 }}>
-        A private, college-only community to connect, share, help and trade —
-        safely and anonymously.
-      </p>
-
-      <div>
-        <Link to="/login">
-          <button style={btnStyle}>Sign In</button>
-        </Link>
-
-        <Link to="/register">
-          <button style={{ ...btnStyle, marginLeft: 10 }}>
-            Sign Up
-          </button>
-        </Link>
-      </div>
+      <button style={btnOutline} onClick={() => navigate("/login")}>
+        Already a Cat? Log In
+      </button>
     </div>
   );
 }
 
-const btnStyle = {
-  padding: "12px 24px",
-  fontSize: 16,
-  borderRadius: 6,
+const container = {
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: 15,
+};
+
+const btn = {
+  padding: "10px 20px",
+  background: "black",
+  color: "white",
   border: "none",
   cursor: "pointer",
-  backgroundColor: "#000",
-  color: "#fff"
+};
+
+const btnOutline = {
+  padding: "10px 20px",
+  background: "white",
+  color: "black",
+  border: "1px solid black",
+  cursor: "pointer",
 };
