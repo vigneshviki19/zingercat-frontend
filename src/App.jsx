@@ -14,7 +14,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing page */}
+        {/* Landing */}
         <Route path="/" element={<Landing />} />
 
         {/* Auth */}
@@ -27,7 +27,7 @@ export default function App() {
           element={token ? <Navigate to="/home" /> : <Register />}
         />
 
-        {/* Protected user pages */}
+        {/* Protected pages */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
@@ -49,7 +49,7 @@ export default function App() {
           }
         />
 
-        {/* Fallback */}
+        {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
