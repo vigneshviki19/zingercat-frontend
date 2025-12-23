@@ -8,12 +8,17 @@ export default function Search() {
   const navigate = useNavigate();
 
   const search = async () => {
-    const res = await api.get(`/profile?q=${q}`);
-    setUsers(res.data);
+    try {
+      const res = await api.get(`/profile?q=${q}`);
+      setUsers(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Unauthorized or error");
+    }
   };
 
   return (
-    <div>
+    <div style={{ maxWidth: 400, margin: "auto" }}>
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -21,8 +26,12 @@ export default function Search() {
       />
       <button onClick={search}>🔍</button>
 
-      {users.map(u => (
-        <p key={u.username} onClick={() => navigate(`/profile/${u.username}`)}>
+      {users.map((u) => (
+        <p
+          key={u.username}
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate(`/profile/${u.username}`)}
+        >
           @{u.username}
         </p>
       ))}
