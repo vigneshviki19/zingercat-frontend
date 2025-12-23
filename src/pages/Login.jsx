@@ -1,70 +1,48 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  async function handleLogin(e) {
+    e.preventDefault();
+
     try {
-      const res = await axios.post(
-        "https://zingercat-backend.onrender.com/api/auth/login",
-        { email, password }
-      );
+      const res = await api.post("/auth/login", { email, password });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
+      localStorage.setItem("role", res.data.role);
 
-      navigate("/home");
+      // FORCE reload so auth state resets
+      window.location.href = "/home";
     } catch (err) {
-      alert("Meow 😿 Wrong whiskers!");
+      alert("Wrong email or password");
     }
-  };
+  }
 
   return (
-    <div style={styles.container}>
-      <h1>Welcome back, Chief Cat 🐱</h1>
-      <p>Scratch less, post more.</p>
+    <form onSubmit={handleLogin} style={{ maxWidth: 300, margin: "auto" }}>
+      <h2>Login</h2>
 
       <input
-        placeholder="Cat Email 🐾"
+        type="email"
+        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        style={styles.input}
+        required
       />
 
       <input
         type="password"
-        placeholder="Secret Meow 🤫"
+        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        style={styles.input}
+        required
       />
 
-      <button onClick={handleLogin} style={styles.button}>
-        Enter the Litter 🐾
-      </button>
-    </div>
+      <button type="submit">Login</button>
+    </form>
   );
 }
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "12px",
-  },
-  input: {
-    padding: "10px",
-    width: "250px",
-  },
-  button: {
-    padding: "10px 20px",
-    cursor: "pointer",
-  },
-};
