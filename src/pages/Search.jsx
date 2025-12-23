@@ -12,7 +12,6 @@ export default function Search() {
       setUsers([]);
       return;
     }
-
     const delay = setTimeout(async () => {
       try {
         const data = await searchUsers(query);
