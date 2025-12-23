@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import PrivateChat from "./pages/PrivateChat";
+import Friends from "./pages/Friends";
 
 
 export default function App() {
@@ -41,6 +42,10 @@ export default function App() {
   element={token ? <PrivateChat /> : <Navigate to="/login" />}
 />
 
+        <Route
+  path="/friends"
+  element={token ? <Friends /> : <Navigate to="/login" />}
+/>
 
         {/* Catch */}
         <Route path="*" element={<Navigate to="/" />} />
