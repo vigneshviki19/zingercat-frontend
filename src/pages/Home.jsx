@@ -21,6 +21,11 @@ export default function Home() {
 </button>
       <button onClick={() => window.location.href = "/friends"}>🤝 My Friends</button>
 <button onClick={() => window.location.href = "/requests"}>📩 Friend Requests</button>
+      <button onClick={() => window.location.href = "/search"}>🔍 Search</button>
+<button onClick={() => window.location.href = `/profile/${localStorage.getItem("username")}`}>
+  👤 My Profile
+</button>
+
 
 
 
