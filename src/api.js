@@ -1,11 +1,10 @@
 import axios from "axios";
 
-/* ---------- AXIOS INSTANCE ---------- */
 const api = axios.create({
   baseURL: "https://zingercat-backend.onrender.com/api"
 });
 
-/* ---------- ATTACH TOKEN ---------- */
+// attach token automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -14,7 +13,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ---------- POSTS ---------- */
+/* POSTS */
 export const getPosts = async () => {
   const res = await api.get("/posts");
   return res.data;
@@ -25,19 +24,19 @@ export const createPost = async (content) => {
   return res.data;
 };
 
-/* ---------- SEARCH USERS ---------- */
-export const searchUsers = async (query) => {
-  const res = await api.get(`/profile/search?q=${query}`);
-  return res.data;
-};
-
-/* ---------- PROFILE ---------- */
+/* PROFILE */
 export const getProfile = async (username) => {
   const res = await api.get(`/profile/${username}`);
   return res.data;
 };
 
-/* ---------- FRIENDS ---------- */
+/* SEARCH */
+export const searchUsers = async (query) => {
+  const res = await api.get(`/profile/search?q=${query}`);
+  return res.data;
+};
+
+/* FRIENDS */
 export const sendFriendRequest = async (username) => {
   const res = await api.post(`/friends/request/${username}`);
   return res.data;
