@@ -7,7 +7,7 @@ import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import PrivateChat from "./pages/PrivateChat";
 import Friends from "./pages/Friends";
-
+import FriendRequests from "./pages/FriendRequests";
 
 export default function App() {
   const token = localStorage.getItem("token");
@@ -46,6 +46,9 @@ export default function App() {
   path="/friends"
   element={token ? <Friends /> : <Navigate to="/login" />}
 />
+        <Route path="/requests" element={token ? <FriendRequests /> : <Navigate to="/login" />} />
+
+        
 
         {/* Catch */}
         <Route path="*" element={<Navigate to="/" />} />
