@@ -16,6 +16,10 @@ export default function Home() {
       <button onClick={handleLogout} style={{ marginBottom: 20 }}>
         Logout 🚪
       </button>
+      <button onClick={() => window.location.href = "/chat"}>
+  💬 Open Live Chat
+</button>
+
 
       <Feed />
     </div>
