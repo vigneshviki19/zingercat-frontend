@@ -1,97 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { searchUsers } from "../api";
 
-export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Search() {
+  const [query, setQuery] = useState("");
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!query.trim()) {
+      setUsers([]);
+      return;
+    }
 
-    const res = await fetch(
-      "https://zingercat-backend.onrender.com/api/auth/register",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+    const delay = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const data = await searchUsers(query);
+        setUsers(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    );
+    }, 300);
 
-    if (res.ok) navigate("/login");
-    else alert("Registration failed");
-  };
+    return () => clearTimeout(delay);
+  }, [query]);
 
   return (
-    <div style={container}>
-      <form style={card} onSubmit={handleRegister}>
-        <h2>🐱 Join Zinger Cat</h2>
-        <p>Create your anonymous college identity</p>
+    <div style={{ maxWidth: 400, margin: "30px auto" }}>
+      <h2>🔍 Search Cats</h2>
 
-        <input
-          type="email"
-          placeholder="College Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={input}
-        />
+      <input
+        placeholder="Search cats 🐾"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ width: "100%", padding: 8 }}
+      />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={input}
-        />
+      {loading && <p>Searching...</p>}
 
-        <button style={button}>Create Account</button>
-
-        <p style={{ marginTop: 10 }}>
-          Already a cat?{" "}
-          <span style={link} onClick={() => navigate("/login")}>
-            Login
-          </span>
-        </p>
-      </form>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {users.map((u) => (
+          <li
+            key={u.username}
+            onClick={() => navigate(`/profile/${u.username}`)}
+            style={{
+              padding: 10,
+              cursor: "pointer",
+              borderBottom: "1px solid #ddd"
+            }}
+          >
+            <strong>@{u.username}</strong>
+            <div style={{ fontSize: 12, color: "#666" }}>
+              {u.about || "No bio"}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
-
-const container = {
-  minHeight: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  background: "linear-gradient(135deg, #000, #333)",
-};
-
-const card = {
-  background: "#fff",
-  padding: 30,
-  borderRadius: 12,
-  width: 320,
-  textAlign: "center",
-};
-
-const input = {
-  width: "100%",
-  padding: 10,
-  margin: "10px 0",
-};
-
-const button = {
-  width: "100%",
-  padding: 10,
-  background: "#000",
-  color: "#fff",
-  border: "none",
-  cursor: "pointer",
-};
-
-const link = {
-  color: "#000",
-  cursor: "pointer",
-  fontWeight: "bold",
-};
