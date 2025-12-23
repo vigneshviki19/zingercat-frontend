@@ -1,9 +1,11 @@
 import axios from "axios";
 
+/* ---------- AXIOS INSTANCE ---------- */
 const api = axios.create({
   baseURL: "https://zingercat-backend.onrender.com/api"
 });
 
+/* ---------- ATTACH TOKEN ---------- */
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -12,16 +14,38 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export default api;
+/* ---------- POSTS ---------- */
+export const getPosts = async () => {
+  const res = await api.get("/posts");
+  return res.data;
+};
 
-/* SEARCH USERS */
-export async function searchUsers(query) {
+export const createPost = async (content) => {
+  const res = await api.post("/posts", { content });
+  return res.data;
+};
+
+/* ---------- SEARCH USERS ---------- */
+export const searchUsers = async (query) => {
   const res = await api.get(`/profile/search?q=${query}`);
   return res.data;
-}
+};
 
-/* GET PROFILE */
-export async function getProfile(username) {
+/* ---------- PROFILE ---------- */
+export const getProfile = async (username) => {
   const res = await api.get(`/profile/${username}`);
   return res.data;
-}
+};
+
+/* ---------- FRIENDS ---------- */
+export const sendFriendRequest = async (username) => {
+  const res = await api.post(`/friends/request/${username}`);
+  return res.data;
+};
+
+export const getFriends = async () => {
+  const res = await api.get("/friends");
+  return res.data;
+};
+
+export default api;
