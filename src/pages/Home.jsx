@@ -19,6 +19,10 @@ export default function Home() {
       <button onClick={() => window.location.href = "/chat"}>
   💬 Open Live Chat
 </button>
+      <button onClick={() => window.location.href = "/friends"}>
+  🤝 My Friends
+</button>
+
 
 
       <Feed />
