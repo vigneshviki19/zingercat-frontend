@@ -11,22 +11,14 @@ export default function Friends() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 500, margin: "auto" }}>
+    <div>
       <h2>🤝 Friends</h2>
-
-      {friends.map((f, i) => (
-        <div key={i} style={{ marginBottom: 10 }}>
+      {friends.map(f => (
+        <div key={f}>
           <b>{f}</b>
-          <button
-            style={{ marginLeft: 10 }}
-            onClick={() => navigate(`/chat/${f}`)}
-          >
-            💬 Chat
-          </button>
+          <button onClick={() => navigate(`/chat/${f}`)}>💬 Chat</button>
         </div>
       ))}
-
-      {friends.length === 0 && <p>No friends yet</p>}
     </div>
   );
 }
