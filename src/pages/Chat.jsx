@@ -1,33 +1,39 @@
 import { useEffect, useState } from "react";
-import socket from "../socket";
+import { io } from "socket.io-client";
+
+const socket = io("https://zingercat-backend.onrender.com");
 
 export default function Chat() {
-  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const username = localStorage.getItem("username");
+  const [text, setText] = useState("");
 
+  const user = localStorage.getItem("username");
+
+  // Load old messages
   useEffect(() => {
-    // listen for incoming messages
-    socket.on("receiveMessage", (data) => {
-      setMessages((prev) => [...prev, data]);
+    fetch("https://zingercat-backend.onrender.com/api/chat")
+      .then((res) => res.json())
+      .then((data) => setMessages(data));
+  }, []);
+
+  // Live messages
+  useEffect(() => {
+    socket.on("receiveMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
     });
 
-    return () => {
-      socket.off("receiveMessage");
-    };
+    return () => socket.off("receiveMessage");
   }, []);
 
   const sendMessage = () => {
-    if (!message.trim()) return;
+    if (!text.trim()) return;
 
-    const data = {
-      user: username,
-      text: message,
-      time: new Date().toLocaleTimeString()
-    };
+    socket.emit("sendMessage", {
+      user,
+      message: text
+    });
 
-    socket.emit("sendMessage", data);
-    setMessage("");
+    setText("");
   };
 
   return (
@@ -35,19 +41,16 @@ export default function Chat() {
       <h2>💬 Live Chat</h2>
 
       <div style={{ border: "1px solid #ccc", padding: 10, height: 300, overflowY: "auto" }}>
-        {messages.map((msg, i) => (
+        {messages.map((m, i) => (
           <div key={i}>
-            <b>{msg.user}</b>: {msg.text}
-            <br />
-            <small>{msg.time}</small>
-            <hr />
+            <b>{m.user}</b>: {m.message}
           </div>
         ))}
       </div>
 
       <input
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         placeholder="Type message..."
         style={{ width: "80%" }}
       />
