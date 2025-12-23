@@ -1,22 +1,32 @@
 import { useEffect, useState } from "react";
-import api from "../api";
+import { getFriends, getFriendRequests, acceptFriend } from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function Friends() {
   const [friends, setFriends] = useState([]);
+  const [requests, setRequests] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get("/friends/list").then(res => setFriends(res.data));
+    getFriends().then(setFriends);
+    getFriendRequests().then(setRequests);
   }, []);
 
   return (
-    <div>
-      <h2>🤝 Friends</h2>
-      {friends.map(f => (
-        <div key={f}>
-          <b>{f}</b>
-          <button onClick={() => navigate(`/chat/${f}`)}>💬 Chat</button>
+    <div style={{ maxWidth: 500, margin: "auto" }}>
+      <h2>👥 Friends</h2>
+
+      {friends.map((f) => (
+        <div key={f.username} onClick={() => navigate(`/chat/${f.username}`)}>
+          @{f.username}
+        </div>
+      ))}
+
+      <h3>🔔 Requests</h3>
+      {requests.map((r) => (
+        <div key={r.username}>
+          @{r.username}
+          <button onClick={() => acceptFriend(r.username)}>Accept</button>
         </div>
       ))}
     </div>
