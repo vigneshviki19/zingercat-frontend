@@ -26,6 +26,13 @@ export default function Home() {
   👤 My Profile
 </button>
 
+socket.on("notification", (data) => {
+  alert(
+    data.type === "friend"
+      ? `New friend request from ${data.from}`
+      : `New message from ${data.from}`
+  );
+});
 
 
 
