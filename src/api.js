@@ -46,5 +46,16 @@ export const getFriends = async () => {
   const res = await api.get("/friends");
   return res.data;
 };
+export const getFriendRequests = async () => {
+  const res = await api.get("/friends/requests");
+  return res.data;
+};
+
+export const acceptFriend = async (username) => {
+  const res = await api.post(`/friends/accept/${username}`);
+  return res.data;
+};
+
+
 
 export default api;
