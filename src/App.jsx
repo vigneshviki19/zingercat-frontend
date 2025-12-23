@@ -5,19 +5,17 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
-import Admin from "./pages/Admin";
 
 export default function App() {
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role"); // "admin" or "user"
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing page */}
+        {/* Landing */}
         <Route path="/" element={<Landing />} />
 
-        {/* Auth pages */}
+        {/* Auth */}
         <Route
           path="/login"
           element={token ? <Navigate to="/home" /> : <Login />}
@@ -27,7 +25,7 @@ export default function App() {
           element={token ? <Navigate to="/home" /> : <Register />}
         />
 
-        {/* Protected user pages */}
+        {/* Protected */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
@@ -37,19 +35,7 @@ export default function App() {
           element={token ? <Chat /> : <Navigate to="/login" />}
         />
 
-        {/* Admin only */}
-        <Route
-          path="/admin"
-          element={
-            token && role === "admin" ? (
-              <Admin />
-            ) : (
-              <Navigate to="/home" />
-            )
-          }
-        />
-
-        {/* Fallback */}
+        {/* Catch */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
