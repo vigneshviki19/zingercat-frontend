@@ -30,11 +30,11 @@ export const getProfile = async (username) => {
   return res.data;
 };
 
-/* SEARCH */
 export const searchUsers = async (query) => {
-  const res = await api.get(`/profile/search?q=${query}`);
+  const res = await api.get(`/profile?q=${query}`);
   return res.data;
 };
+
 
 /* FRIENDS */
 export const sendFriendRequest = async (username) => {
