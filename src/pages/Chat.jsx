@@ -5,35 +5,35 @@ import io from "socket.io-client";
 const socket = io("https://zingercat-backend.onrender.com");
 
 export default function Chat() {
-  const { username } = useParams();
+  const { username } = useParams(); // chatting with
   const me = localStorage.getItem("username");
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
 
   useEffect(() => {
-    socket.emit("join", me);
-
-    socket.on("privateMessage", (msg) => {
-      setMessages((prev) => [...prev, msg]);
+    socket.on("receiveMessage", (data) => {
+      setMessages((prev) => [...prev, data]);
     });
 
-    return () => socket.off("privateMessage");
+    return () => socket.off("receiveMessage");
   }, []);
 
-  const send = () => {
-    socket.emit("privateMessage", {
+  function sendMessage() {
+    if (!text.trim()) return;
+
+    socket.emit("sendMessage", {
       from: me,
       to: username,
       message: text
     });
-    setMessages([...messages, { from: me, message: text }]);
+
     setText("");
-  };
+  }
 
   return (
-    <div>
-      <h2>Chat with @{username}</h2>
+    <div style={{ padding: 20 }}>
+      <h2>💬 Chat with @{username}</h2>
 
       {messages.map((m, i) => (
         <p key={i}>
@@ -41,8 +41,12 @@ export default function Chat() {
         </p>
       ))}
 
-      <input value={text} onChange={(e) => setText(e.target.value)} />
-      <button onClick={send}>Send</button>
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type message..."
+      />
+      <button onClick={sendMessage}>Send</button>
     </div>
   );
 }
