@@ -4,40 +4,61 @@ import { io } from "socket.io-client";
 const socket = io("https://zingercat-backend.onrender.com");
 
 export default function Chat() {
-  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const username = localStorage.getItem("username");
+  const [text, setText] = useState("");
+  const user = localStorage.getItem("username");
 
   useEffect(() => {
-    socket.on("receiveMessage", (data) => {
-      setMessages((prev) => [...prev, data]);
+    // Load history on connect
+    socket.on("chatHistory", (history) => {
+      setMessages(history);
     });
+
+    // Receive live messages
+    socket.on("receiveMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => {
+      socket.off("chatHistory");
+      socket.off("receiveMessage");
+    };
   }, []);
 
   const sendMessage = () => {
-    if (!message.trim()) return;
+    if (!text.trim()) return;
 
     socket.emit("sendMessage", {
-      user: username,
-      text: message
+      user,
+      text,
     });
 
-    setMessage("");
+    setText("");
   };
 
   return (
     <div style={{ maxWidth: 600, margin: "auto" }}>
       <h2>💬 Live Chat</h2>
 
-      <div style={{ border: "1px solid #ccc", padding: 10, height: 300, overflowY: "auto" }}>
-        {messages.map((msg, i) => (
-          <p key={i}><b>{msg.user}:</b> {msg.text}</p>
+      <div
+        style={{
+          height: 300,
+          overflowY: "auto",
+          border: "1px solid #ccc",
+          padding: 10,
+          marginBottom: 10,
+        }}
+      >
+        {messages.map((m, i) => (
+          <p key={i}>
+            <b>{m.user}:</b> {m.text}
+          </p>
         ))}
       </div>
 
       <input
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         placeholder="Type message..."
         style={{ width: "80%" }}
       />
