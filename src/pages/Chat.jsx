@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("https://zingercat-backend.onrender.com");
+// 🔥 create socket ONCE
+const socket = io("https://zingercat-backend.onrender.com", {
+  transports: ["websocket"],
+});
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-  const user = localStorage.getItem("username");
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
-    // Load history on connect
+    // receive old messages
     socket.on("chatHistory", (history) => {
       setMessages(history);
     });
 
-    // Receive live messages
+    // receive live messages
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -29,8 +32,8 @@ export default function Chat() {
     if (!text.trim()) return;
 
     socket.emit("sendMessage", {
-      user,
-      text,
+      user: username,
+      text: text,
     });
 
     setText("");
@@ -43,9 +46,9 @@ export default function Chat() {
       <div
         style={{
           height: 300,
-          overflowY: "auto",
           border: "1px solid #ccc",
           padding: 10,
+          overflowY: "auto",
           marginBottom: 10,
         }}
       >
