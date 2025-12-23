@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
+import PrivateChat from "./pages/PrivateChat";
+
 
 export default function App() {
   const token = localStorage.getItem("token");
@@ -34,6 +36,11 @@ export default function App() {
           path="/chat"
           element={token ? <Chat /> : <Navigate to="/login" />}
         />
+        <Route
+  path="/chat/:user"
+  element={token ? <PrivateChat /> : <Navigate to="/login" />}
+/>
+
 
         {/* Catch */}
         <Route path="*" element={<Navigate to="/" />} />
