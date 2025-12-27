@@ -18,6 +18,7 @@ export default function App() {
   const token = localStorage.getItem("token");
   const profileDone = localStorage.getItem("profileDone") === "true";
 
+
   return (
     <BrowserRouter>
       <Routes>
