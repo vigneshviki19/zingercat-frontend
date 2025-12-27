@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Landing from "./pages/Landing";
-import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 import ProfileSetup from "./pages/ProfileSetup";
 import Home from "./pages/Home";
 
@@ -21,20 +21,20 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ---------- PUBLIC ---------- */}
+        {/* PUBLIC */}
         <Route path="/" element={<Landing />} />
-
-        <Route
-          path="/login"
-          element={token ? <Navigate to="/home" /> : <Login />}
-        />
 
         <Route
           path="/register"
           element={token ? <Navigate to="/home" /> : <Register />}
         />
 
-        {/* ---------- PROFILE SETUP (FIRST TIME) ---------- */}
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/home" /> : <Login />}
+        />
+
+        {/* PROFILE SETUP (FIRST TIME ONLY) */}
         <Route
           path="/profile-setup"
           element={
@@ -46,7 +46,7 @@ export default function App() {
           }
         />
 
-        {/* ---------- PROTECTED ---------- */}
+        {/* PROTECTED */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
@@ -87,7 +87,7 @@ export default function App() {
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
-        {/* ---------- FALLBACK ---------- */}
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
