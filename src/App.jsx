@@ -18,22 +18,21 @@ export default function App() {
   const token = localStorage.getItem("token");
   const profileDone = localStorage.getItem("profileDone") === "true";
 
-
   return (
     <BrowserRouter>
       <Routes>
+        {/* PUBLIC */}
         <Route path="/" element={<Landing />} />
-
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/home" /> : <Login />}
+        />
         <Route
           path="/register"
           element={token ? <Navigate to="/home" /> : <Register />}
         />
 
-        <Route
-          path="/login"
-          element={token ? <Navigate to="/home" /> : <Login />}
-        />
-
+        {/* PROFILE SETUP (ONLY FIRST TIME) */}
         <Route
           path="/profile-setup"
           element={
@@ -45,46 +44,41 @@ export default function App() {
           }
         />
 
+        {/* PROTECTED */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/chat"
           element={token ? <Chat /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/chat/:user"
           element={token ? <PrivateChat /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/friends"
           element={token ? <Friends /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/requests"
           element={token ? <FriendRequests /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/profile/:username"
           element={token ? <Profile /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/edit-profile"
           element={token ? <EditProfile /> : <Navigate to="/login" />}
         />
-
         <Route
           path="/search"
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
