@@ -16,7 +16,7 @@ import Search from "./pages/Search";
 
 export default function App() {
   const token = localStorage.getItem("token");
-const profileDone = localStorage.getItem("profileDone") === "true";
+  const profileDone = localStorage.getItem("profileDone") === "true";
 
   return (
     <BrowserRouter>
