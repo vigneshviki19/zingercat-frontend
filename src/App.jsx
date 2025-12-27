@@ -21,7 +21,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
         <Route path="/" element={<Landing />} />
 
         <Route
@@ -34,7 +33,6 @@ export default function App() {
           element={token ? <Navigate to="/home" /> : <Login />}
         />
 
-        {/* PROFILE SETUP (FIRST TIME ONLY) */}
         <Route
           path="/profile-setup"
           element={
@@ -46,7 +44,6 @@ export default function App() {
           }
         />
 
-        {/* PROTECTED */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
@@ -87,7 +84,6 @@ export default function App() {
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
-        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
