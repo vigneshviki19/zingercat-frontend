@@ -1,28 +1,35 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function Register() {
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!email.endsWith("@psgtech.ac.in")) {
-      return setError("Use college email (@psgtech.ac.in)");
+      setError("Use college email (example@psgtech.ac.in)");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
     }
 
     if (password !== confirm) {
-      return setError("Passwords do not match");
+      setError("Passwords do not match");
+      return;
     }
 
     try {
+      setLoading(true);
+
       const res = await axios.post(
         "https://zingercat-backend.onrender.com/api/auth/register",
         { email, password }
@@ -33,62 +40,54 @@ export default function Register() {
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("profileDone", "false");
 
-      // 🔥 REDIRECT TO PROFILE EDIT (NOT PROFILE VIEW)
-      navigate("/edit-profile");
+      // 🔥 FORCE FULL RELOAD (THIS FIXES EVERYTHING)
+      window.location.href = "/edit-profile";
+
     } catch (err) {
-      setError(err.response?.data?.message || "Register failed");
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "60px auto" }}>
+    <div style={{ maxWidth: 400, margin: "80px auto" }}>
       <h2>🐱 Join Zinger Cat</h2>
 
       <form onSubmit={handleRegister}>
         <input
-          placeholder="College Email"
+          placeholder="College Email (example@psgtech.ac.in)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={input}
-          required
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Create password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={input}
-          required
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         <input
           type="password"
-          placeholder="Confirm Password"
+          placeholder="Confirm password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          style={input}
-          required
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <button style={button}>Register 🐾</button>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ width: "100%", padding: 10 }}
+        >
+          {loading ? "Registering..." : "Register 🐾"}
+        </button>
       </form>
     </div>
   );
 }
-
-const input = {
-  width: "100%",
-  padding: 10,
-  marginBottom: 10
-};
-
-const button = {
-  width: "100%",
-  padding: 12,
-  background: "black",
-  color: "white",
-  border: "none"
-};
