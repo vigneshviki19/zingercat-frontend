@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import ProfileSetup from "./pages/ProfileSetup";
 import Home from "./pages/Home";
 
 import Chat from "./pages/Chat";
