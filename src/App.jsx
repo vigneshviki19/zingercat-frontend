@@ -4,7 +4,6 @@ import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
-
 import Chat from "./pages/Chat";
 import PrivateChat from "./pages/PrivateChat";
 import Friends from "./pages/Friends";
@@ -19,6 +18,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         {/* ---------- PUBLIC ---------- */}
         <Route path="/" element={<Landing />} />
 
@@ -32,20 +32,15 @@ export default function App() {
           element={token ? <Navigate to="/home" /> : <Login />}
         />
 
-        {/* ---------- PROFILE EDIT (ALLOW AFTER REGISTER) ---------- */}
-        <Route
-          path="/edit-profile"
-          element={
-            localStorage.getItem("token")
-              ? <EditProfile />
-              : <Navigate to="/login" />
-          }
-        />
-
         {/* ---------- PROTECTED ---------- */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/edit-profile"
+          element={token ? <EditProfile /> : <Navigate to="/login" />}
         />
 
         <Route
@@ -80,6 +75,7 @@ export default function App() {
 
         {/* ---------- FALLBACK ---------- */}
         <Route path="*" element={<Navigate to="/" />} />
+
       </Routes>
     </BrowserRouter>
   );
