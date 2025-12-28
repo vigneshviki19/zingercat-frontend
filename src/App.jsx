@@ -16,68 +16,72 @@ import Search from "./pages/Search";
 export default function App() {
   const token = localStorage.getItem("token");
   const profileDone = localStorage.getItem("profileDone") === "true";
+  const username = localStorage.getItem("username");
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
+        {/* ---------- PUBLIC ---------- */}
         <Route path="/" element={<Landing />} />
+
+        <Route
+          path="/register"
+          element={token ? <Navigate to={`/profile/${username}`} /> : <Register />}
+        />
+
         <Route
           path="/login"
           element={token ? <Navigate to="/home" /> : <Login />}
         />
-        <Route
-          path="/register"
-          element={token ? <Navigate to="/home" /> : <Register />}
-        />
 
-        {/* PROFILE SETUP (ONLY FIRST TIME) */}
+        {/* ---------- PROTECTED ---------- */}
         <Route
-          path="/profile-setup"
+          path="/home"
           element={
-            token && !profileDone ? (
-              <ProfileSetup />
+            token ? (
+              profileDone ? <Home /> : <Navigate to={`/profile/${username}`} />
             ) : (
-              <Navigate to="/home" />
+              <Navigate to="/login" />
             )
           }
         />
 
-        {/* PROTECTED */}
-        <Route
-          path="/home"
-          element={token ? <Home /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/chat"
-          element={token ? <Chat /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/chat/:user"
-          element={token ? <PrivateChat /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/friends"
-          element={token ? <Friends /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/requests"
-          element={token ? <FriendRequests /> : <Navigate to="/login" />}
-        />
         <Route
           path="/profile/:username"
           element={token ? <Profile /> : <Navigate to="/login" />}
         />
+
         <Route
           path="/edit-profile"
           element={token ? <EditProfile /> : <Navigate to="/login" />}
         />
+
+        <Route
+          path="/chat"
+          element={token ? <Chat /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/chat/:user"
+          element={token ? <PrivateChat /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/friends"
+          element={token ? <Friends /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/requests"
+          element={token ? <FriendRequests /> : <Navigate to="/login" />}
+        />
+
         <Route
           path="/search"
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
-        {/* FALLBACK */}
+        {/* ---------- FALLBACK ---------- */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
