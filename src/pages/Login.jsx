@@ -1,48 +1,81 @@
 import { useState } from "react";
-import api from "../api";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleLogin(e) {
     e.preventDefault();
+    setError("");
 
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await axios.post(
+        "https://zingercat-backend.onrender.com/api/auth/login",
+        { email, password }
+      );
 
+      // 🔐 Save auth data
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
-      localStorage.setItem("role", res.data.role);
+      localStorage.setItem("profileDone", "true"); // login users already have profile
 
-      // FORCE reload so auth state resets
-      window.location.href = "/home";
+      // ✅ GO DIRECTLY TO HOME
+      navigate("/home");
     } catch (err) {
-      alert("Wrong email or password");
+      setError(err.response?.data?.message || "Login failed");
     }
   }
 
   return (
-    <form onSubmit={handleLogin} style={{ maxWidth: 300, margin: "auto" }}>
-      <h2>Login</h2>
+    <div style={{ maxWidth: 400, margin: "60px auto" }}>
+      <h2>😺 Welcome back, Meow!</h2>
+      <p>Login to continue</p>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="College Email (example@psgtech.ac.in)"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
+        />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
+        />
 
-      <button type="submit">Login</button>
-    </form>
+        {error && (
+          <p style={{ color: "red", marginBottom: 10 }}>{error}</p>
+        )}
+
+        <button
+          type="submit"
+          style={{ width: "100%", padding: 10 }}
+        >
+          Login 🐾
+        </button>
+      </form>
+
+      <p style={{ marginTop: 15 }}>
+        New here?{" "}
+        <span
+          style={{ color: "blue", cursor: "pointer" }}
+          onClick={() => navigate("/register")}
+        >
+          Create an account
+        </span>
+      </p>
+    </div>
   );
 }
