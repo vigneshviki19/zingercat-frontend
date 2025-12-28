@@ -64,5 +64,33 @@ export const acceptFriend = async (username) => {
   const res = await api.post(`/friends/accept/${username}`);
   return res.data;
 };
+/* POSTS */
+export const getPosts = async () => {
+  const res = await api.get("/posts");
+  return res.data;
+};
+
+export const createPost = async (formData) => {
+  const res = await api.post("/posts", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+  return res.data;
+};
+
+export const likePost = async (id) => {
+  const res = await api.post(`/posts/${id}/like`);
+  return res.data;
+};
+
+export const commentPost = async (id, text) => {
+  const res = await api.post(`/posts/${id}/comment`, { text });
+  return res.data;
+};
+
+export const sharePost = async (id) => {
+  const res = await api.post(`/posts/${id}/share`);
+  return res.data;
+};
+
 
 export default api;
