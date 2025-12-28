@@ -1,10 +1,15 @@
 import axios from "axios";
 
+/* ================================
+   AXIOS INSTANCE
+================================ */
 const api = axios.create({
   baseURL: "https://zingercat-backend.onrender.com/api"
 });
 
-// attach token automatically
+/* ================================
+   AUTO ATTACH JWT TOKEN
+================================ */
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -13,45 +18,79 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ---------- POSTS ---------- */
+/* ================================
+   AUTH
+================================ */
+export const loginUser = async (email, password) => {
+  const res = await api.post("/auth/login", { email, password });
+  return res.data;
+};
 
-// GET POSTS
+export const registerUser = async (email, password) => {
+  const res = await api.post("/auth/register", { email, password });
+  return res.data;
+};
+
+/* ================================
+   POSTS (FEED)
+================================ */
 export const getPosts = async () => {
   const res = await api.get("/posts");
   return res.data;
 };
 
-// CREATE POST (TEXT + IMAGE)
 export const createPost = async (formData) => {
   const res = await api.post("/posts", formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
-    },
+      "Content-Type": "multipart/form-data"
+    }
   });
   return res.data;
 };
 
-/* ---------- PROFILE ---------- */
+export const likePost = async (postId) => {
+  const res = await api.post(`/posts/${postId}/like`);
+  return res.data;
+};
 
+export const commentPost = async (postId, text) => {
+  const res = await api.post(`/posts/${postId}/comment`, { text });
+  return res.data;
+};
+
+export const sharePost = async (postId) => {
+  const res = await api.post(`/posts/${postId}/share`);
+  return res.data;
+};
+
+/* ================================
+   PROFILE
+================================ */
 export const getProfile = async (username) => {
   const res = await api.get(`/profile/${username}`);
   return res.data;
 };
 
-export const searchUsers = async (query) => {
-  const res = await api.get(`/profile?q=${query}`);
+export const updateProfile = async (data) => {
+  const res = await api.put("/profile", data);
   return res.data;
 };
 
-/* ---------- FRIENDS ---------- */
+export const searchUsers = async (query) => {
+  const res = await api.get(`/profile/search?q=${query}`);
+  return res.data;
+};
+
+/* ================================
+   FRIENDS
+================================ */
+export const getFriends = async () => {
+  const res = await api.get("/friends");
+  return res.data;
+};
 
 export const sendFriendRequest = async (username) => {
   const res = await api.post(`/friends/request/${username}`);
-  return res.data;
-};
-
-export const getFriends = async () => {
-  const res = await api.get("/friends");
   return res.data;
 };
 
@@ -64,33 +103,8 @@ export const acceptFriend = async (username) => {
   const res = await api.post(`/friends/accept/${username}`);
   return res.data;
 };
-/* POSTS */
-export const getPosts = async () => {
-  const res = await api.get("/posts");
-  return res.data;
-};
 
-export const createPost = async (formData) => {
-  const res = await api.post("/posts", formData, {
-    headers: { "Content-Type": "multipart/form-data" }
-  });
-  return res.data;
-};
-
-export const likePost = async (id) => {
-  const res = await api.post(`/posts/${id}/like`);
-  return res.data;
-};
-
-export const commentPost = async (id, text) => {
-  const res = await api.post(`/posts/${id}/comment`, { text });
-  return res.data;
-};
-
-export const sharePost = async (id) => {
-  const res = await api.post(`/posts/${id}/share`);
-  return res.data;
-};
-
-
+/* ================================
+   EXPORT AXIOS INSTANCE
+================================ */
 export default api;
