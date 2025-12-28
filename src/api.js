@@ -24,4 +24,36 @@ export const createPost = async (content) => {
   return res.data;
 };
 
+/* PROFILE */
+export const getProfile = async (username) => {
+  const res = await api.get(`/profile/${username}`);
+  return res.data;
+};
+
+export const searchUsers = async (query) => {
+  const res = await api.get(`/profile?q=${query}`);
+  return res.data;
+};
+
+/* FRIENDS */
+export const sendFriendRequest = async (username) => {
+  const res = await api.post(`/friends/request/${username}`);
+  return res.data;
+};
+
+export const getFriends = async () => {
+  const res = await api.get("/friends");
+  return res.data;
+};
+
+export const getFriendRequests = async () => {
+  const res = await api.get("/friends/requests");
+  return res.data;
+};
+
+export const acceptFriend = async (username) => {
+  const res = await api.post(`/friends/accept/${username}`);
+  return res.data;
+};
+
 export default api;
