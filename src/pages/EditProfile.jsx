@@ -1,121 +1,93 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../api";
+import { useState } from "react";
+import axios from "axios";
 
-export default function EditProfile() {
-  const navigate = useNavigate();
-  const username = localStorage.getItem("username");
-
-  const [name, setName] = useState("");
-  const [department, setDepartment] = useState("");
-  const [yearFrom, setYearFrom] = useState("");
-  const [yearTo, setYearTo] = useState("");
-  const [about, setAbout] = useState("");
+export default function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // load existing profile
-  useEffect(() => {
-    async function loadProfile() {
-      try {
-        const res = await api.get(`/profile/${username}`);
-        const p = res.data;
-
-        setName(p.name || "");
-        setDepartment(p.department || "");
-        setYearFrom(p.yearFrom || "");
-        setYearTo(p.yearTo || "");
-        setAbout(p.about || "");
-      } catch (err) {
-        console.error("Profile load failed", err);
-      }
-    }
-    loadProfile();
-  }, [username]);
-
-  async function handleSave(e) {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setError("");
+
+    if (!email.endsWith("@psgtech.ac.in")) {
+      setError("Use college email (example@psgtech.ac.in)");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
 
     try {
-      await api.put(`/profile/${username}`, {
-        name,
-        department,
-        yearFrom,
-        yearTo,
-        about
-      });
+      setLoading(true);
 
-      localStorage.setItem("profileDone", "true");
-      navigate(`/profile/${username}`);
+      const res = await axios.post(
+        "https://zingercat-backend.onrender.com/api/auth/register",
+        { email, password }
+      );
+
+      // 🔥 SAVE AUTH
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.username);
+      localStorage.setItem("profileDone", "false");
+
+      // 🔥 FORCE FULL RELOAD (THIS FIXES EVERYTHING)
+      window.location.href = "/edit-profile";
+
     } catch (err) {
-      alert("Failed to update profile");
+      setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div style={{ maxWidth: 500, margin: "40px auto" }}>
-      <h2>✏️ Edit Profile</h2>
+    <div style={{ maxWidth: 400, margin: "80px auto" }}>
+      <h2>🐱 Join Zinger Cat</h2>
 
-      <form onSubmit={handleSave}>
+      <form onSubmit={handleRegister}>
         <input
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={input}
+          placeholder="College Email (example@psgtech.ac.in)"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         <input
-          placeholder="Department"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          style={input}
+          type="password"
+          placeholder="Create password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <input
-            placeholder="Year from (2024)"
-            value={yearFrom}
-            onChange={(e) => setYearFrom(e.target.value)}
-            style={input}
-          />
-          <input
-            placeholder="Year to (2028)"
-            value={yearTo}
-            onChange={(e) => setYearTo(e.target.value)}
-            style={input}
-          />
-        </div>
-
-        <textarea
-          placeholder="About you (max 120 words)"
-          value={about}
-          onChange={(e) => setAbout(e.target.value)}
-          maxLength={700}
-          rows={4}
-          style={{ ...input, resize: "none" }}
+        <input
+          type="password"
+          placeholder="Confirm password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
-        <button disabled={loading} style={button}>
-          {loading ? "Saving..." : "Save Profile"}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ width: "100%", padding: 10 }}
+        >
+          {loading ? "Registering..." : "Register 🐾"}
         </button>
       </form>
     </div>
   );
 }
-
-const input = {
-  width: "100%",
-  padding: 10,
-  marginBottom: 12
-};
-
-const button = {
-  width: "100%",
-  padding: 12,
-  background: "black",
-  color: "white",
-  border: "none",
-  cursor: "pointer"
-};
