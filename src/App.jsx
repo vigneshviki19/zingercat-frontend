@@ -19,25 +19,33 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
+        {/* ---------- PUBLIC ---------- */}
         <Route path="/" element={<Landing />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
 
-        {/* PROTECTED */}
+        <Route
+          path="/register"
+          element={token ? <Navigate to="/home" /> : <Register />}
+        />
+
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/home" /> : <Login />}
+        />
+
+        {/* ---------- PROFILE EDIT (ALLOW AFTER REGISTER) ---------- */}
+        <Route
+          path="/edit-profile"
+          element={
+            localStorage.getItem("token")
+              ? <EditProfile />
+              : <Navigate to="/login" />
+          }
+        />
+
+        {/* ---------- PROTECTED ---------- */}
         <Route
           path="/home"
           element={token ? <Home /> : <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/profile/:username"
-          element={token ? <Profile /> : <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/edit-profile"
-          element={token ? <EditProfile /> : <Navigate to="/login" />}
         />
 
         <Route
@@ -61,11 +69,16 @@ export default function App() {
         />
 
         <Route
+          path="/profile/:username"
+          element={token ? <Profile /> : <Navigate to="/login" />}
+        />
+
+        <Route
           path="/search"
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
-        {/* FALLBACK */}
+        {/* ---------- FALLBACK ---------- */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
