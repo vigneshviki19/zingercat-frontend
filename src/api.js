@@ -13,18 +13,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* POSTS */
+/* ---------- POSTS ---------- */
+
+// GET POSTS
 export const getPosts = async () => {
   const res = await api.get("/posts");
   return res.data;
 };
 
-export const createPost = async (content) => {
-  const res = await api.post("/posts", { content });
+// CREATE POST (TEXT + IMAGE)
+export const createPost = async (formData) => {
+  const res = await api.post("/posts", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return res.data;
 };
 
-/* PROFILE */
+/* ---------- PROFILE ---------- */
+
 export const getProfile = async (username) => {
   const res = await api.get(`/profile/${username}`);
   return res.data;
@@ -35,7 +43,8 @@ export const searchUsers = async (query) => {
   return res.data;
 };
 
-/* FRIENDS */
+/* ---------- FRIENDS ---------- */
+
 export const sendFriendRequest = async (username) => {
   const res = await api.post(`/friends/request/${username}`);
   return res.data;
@@ -53,14 +62,6 @@ export const getFriendRequests = async () => {
 
 export const acceptFriend = async (username) => {
   const res = await api.post(`/friends/accept/${username}`);
-  return res.data;
-};
-export const createPost = async (formData) => {
-  const res = await api.post("/posts", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data"
-    }
-  });
   return res.data;
 };
 
