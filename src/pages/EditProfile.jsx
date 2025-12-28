@@ -1,91 +1,101 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+export default function EditProfile() {
+  const [name, setName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [yearFrom, setYearFrom] = useState("");
+  const [yearTo, setYearTo] = useState("");
+  const [about, setAbout] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!email.endsWith("@psgtech.ac.in")) {
-      setError("Use college email (example@psgtech.ac.in)");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (password !== confirm) {
-      setError("Passwords do not match");
+    if (!name || !department || !yearFrom || !yearTo) {
+      setError("Fill all required fields");
       return;
     }
 
     try {
-      setLoading(true);
+      const token = localStorage.getItem("token");
 
-      const res = await axios.post(
-        "https://zingercat-backend.onrender.com/api/auth/register",
-        { email, password }
+      await axios.put(
+        "https://zingercat-backend.onrender.com/api/profile",
+        {
+          name,
+          department,
+          year: `${yearFrom}-${yearTo}`,
+          about
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
 
-      // 🔥 SAVE AUTH
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", res.data.username);
-      localStorage.setItem("profileDone", "false");
+      // 🔥 MARK PROFILE DONE
+      localStorage.setItem("profileDone", "true");
 
-      // 🔥 FORCE FULL RELOAD (THIS FIXES EVERYTHING)
-      window.location.href = "/edit-profile";
+      // 🔥 GO HOME
+      window.location.href = "/home";
 
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+      setError("Failed to save profile");
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "80px auto" }}>
-      <h2>🐱 Join Zinger Cat</h2>
+    <div style={{ maxWidth: 500, margin: "60px auto" }}>
+      <h2>👤 Complete Your Profile</h2>
 
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleSave}>
         <input
-          placeholder="College Email (example@psgtech.ac.in)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Your Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         <input
-          type="password"
-          placeholder="Create password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Department"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
           style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
-        <input
-          type="password"
-          placeholder="Confirm password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
+        <div style={{ display: "flex", gap: 10 }}>
+          <input
+            placeholder="From (2024)"
+            value={yearFrom}
+            onChange={(e) => setYearFrom(e.target.value)}
+            style={{ flex: 1, padding: 10 }}
+          />
+          <input
+            placeholder="To (2028)"
+            value={yearTo}
+            onChange={(e) => setYearTo(e.target.value)}
+            style={{ flex: 1, padding: 10 }}
+          />
+        </div>
+
+        <textarea
+          placeholder="About you (max 120 words)"
+          value={about}
+          onChange={(e) => setAbout(e.target.value)}
+          rows={4}
+          style={{ width: "100%", padding: 10, marginTop: 10 }}
         />
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <button
           type="submit"
-          disabled={loading}
-          style={{ width: "100%", padding: 10 }}
+          style={{ width: "100%", padding: 10, marginTop: 15 }}
         >
-          {loading ? "Registering..." : "Register 🐾"}
+          Save Profile ✅
         </button>
       </form>
     </div>
