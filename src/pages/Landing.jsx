@@ -21,7 +21,7 @@ export default function Landing() {
       <button onClick={() => (window.location.href = "/register")}>
         🐱 New Cat? Sign Up
       </button>
-
+      
       <br /><br />
 
       <button onClick={() => (window.location.href = "/login")}>
