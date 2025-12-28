@@ -15,35 +15,19 @@ import Search from "./pages/Search";
 
 export default function App() {
   const token = localStorage.getItem("token");
-  const profileDone = localStorage.getItem("profileDone") === "true";
-  const username = localStorage.getItem("username");
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* ---------- PUBLIC ---------- */}
+        {/* PUBLIC */}
         <Route path="/" element={<Landing />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/register"
-          element={token ? <Navigate to={`/profile/${username}`} /> : <Register />}
-        />
-
-        <Route
-          path="/login"
-          element={token ? <Navigate to="/home" /> : <Login />}
-        />
-
-        {/* ---------- PROTECTED ---------- */}
+        {/* PROTECTED */}
         <Route
           path="/home"
-          element={
-            token ? (
-              profileDone ? <Home /> : <Navigate to={`/profile/${username}`} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
+          element={token ? <Home /> : <Navigate to="/login" />}
         />
 
         <Route
@@ -81,7 +65,7 @@ export default function App() {
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
-        {/* ---------- FALLBACK ---------- */}
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
