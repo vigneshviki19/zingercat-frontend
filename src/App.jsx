@@ -78,9 +78,3 @@ export default function App() {
           element={token ? <Search /> : <Navigate to="/login" />}
         />
 
-        {/* FALLBACK */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
