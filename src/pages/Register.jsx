@@ -14,12 +14,13 @@ export default function Register() {
   const COLLEGE_DOMAIN = "@psgtech.ac.in";
 
   const handleRegister = async (e) => {
-    e.preventDefault();
-    setError("");
+  const res = await axios.post(
+  "https://zingercat-backend.onrender.com/api/auth/register",
+  { email, password }
+);
 
-    // ✅ Domain check
-    if (!email.endsWith(COLLEGE_DOMAIN)) {
-      return setError(`Email must end with ${COLLEGE_DOMAIN}`);
+console.log("REGISTER RESPONSE:", res.data);
+
     }
 
     // ✅ Password check
