@@ -28,11 +28,13 @@ export default function Register() {
         { email, password }
       );
 
+      // 🔥 SAVE AUTH
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("profileDone", "false");
 
-      navigate(`/profile/${res.data.username}`);
+      // 🔥 REDIRECT TO PROFILE EDIT (NOT PROFILE VIEW)
+      navigate("/edit-profile");
     } catch (err) {
       setError(err.response?.data?.message || "Register failed");
     }
