@@ -1,103 +1,74 @@
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 export default function EditProfile() {
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
-  const [yearFrom, setYearFrom] = useState("");
-  const [yearTo, setYearTo] = useState("");
+  const [fromYear, setFromYear] = useState("");
+  const [toYear, setToYear] = useState("");
   const [about, setAbout] = useState("");
   const [error, setError] = useState("");
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setError("");
+  useEffect(() => {
+    async function loadMyProfile() {
+      try {
+        const res = await api.get("/profile/me");
+        const p = res.data;
 
-    if (!name || !department || !yearFrom || !yearTo) {
-      setError("Fill all required fields");
-      return;
+        setName(p.name || "");
+        setDepartment(p.department || "");
+        setFromYear(p.fromYear || "");
+        setToYear(p.toYear || "");
+        setAbout(p.about || "");
+      } catch {
+        setError("Failed to load profile");
+      }
     }
 
+    loadMyProfile();
+  }, []);
+
+  async function saveProfile() {
     try {
-      const token = localStorage.getItem("token");
+      await api.put("/profile", {
+        name,
+        department,
+        fromYear,
+        toYear,
+        about
+      });
 
-      await axios.put(
-        "https://zingercat-backend.onrender.com/api/profile",
-        {
-          name,
-          department,
-          year: `${yearFrom}-${yearTo}`,
-          about
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      // 🔥 MARK PROFILE DONE
-      localStorage.setItem("profileDone", "true");
-
-      // 🔥 GO HOME
-      window.location.href = "/home";
-
-    } catch (err) {
+      navigate(`/profile/${localStorage.getItem("username")}`);
+    } catch {
       setError("Failed to save profile");
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: 500, margin: "60px auto" }}>
-      <h2>👤 Complete Your Profile</h2>
+    <div style={{ padding: 20 }}>
+      <h2>✏️ Edit Your Profile</h2>
 
-      <form onSubmit={handleSave}>
-        <input
-          placeholder="Your Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
-        />
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="Name" />
+      <input value={department} onChange={e => setDepartment(e.target.value)} placeholder="Department" />
 
-        <input
-          placeholder="Department"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
-        />
+      <div>
+        <input value={fromYear} onChange={e => setFromYear(e.target.value)} placeholder="From year" />
+        <input value={toYear} onChange={e => setToYear(e.target.value)} placeholder="To year" />
+      </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <input
-            placeholder="From (2024)"
-            value={yearFrom}
-            onChange={(e) => setYearFrom(e.target.value)}
-            style={{ flex: 1, padding: 10 }}
-          />
-          <input
-            placeholder="To (2028)"
-            value={yearTo}
-            onChange={(e) => setYearTo(e.target.value)}
-            style={{ flex: 1, padding: 10 }}
-          />
-        </div>
+      <textarea
+        value={about}
+        maxLength={120}
+        onChange={e => setAbout(e.target.value)}
+        placeholder="About you (max 120 chars)"
+      />
 
-        <textarea
-          placeholder="About you (max 120 words)"
-          value={about}
-          onChange={(e) => setAbout(e.target.value)}
-          rows={4}
-          style={{ width: "100%", padding: 10, marginTop: 10 }}
-        />
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-
-        <button
-          type="submit"
-          style={{ width: "100%", padding: 10, marginTop: 15 }}
-        >
-          Save Profile ✅
-        </button>
-      </form>
+      <button onClick={saveProfile}>Save Profile ✅</button>
     </div>
   );
 }
