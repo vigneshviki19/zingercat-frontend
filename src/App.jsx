@@ -22,8 +22,8 @@ export default function App() {
 
         {/* PUBLIC */}
         <Route path="/" element={<Landing />} />
-        <Route path="/register" element={!token ? <Register /> : <Navigate to="/home" />} />
         <Route path="/login" element={!token ? <Login /> : <Navigate to="/home" />} />
+        <Route path="/register" element={!token ? <Register /> : <Navigate to="/home" />} />
 
         {/* PROFILE SETUP */}
         <Route
