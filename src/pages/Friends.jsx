@@ -7,23 +7,33 @@ export default function Friends() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getFriends().then(setFriends);
+    loadFriends();
   }, []);
 
-  if (!friends.length) {
-    return <p style={{ padding: 20 }}>No friends yet 🐾</p>;
+  async function loadFriends() {
+    try {
+      const data = await getFriends();
+      setFriends(data || []);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>👥 Friends</h2>
-      {friends.map((f) => (
+      <h2>🤝 My Friends</h2>
+
+      {friends.map((friend) => (
         <div
-          key={f}
-          style={{ cursor: "pointer", padding: 10 }}
-          onClick={() => navigate(`/chat/${f}`)}
+          key={friend}
+          onClick={() => navigate(`/profile/${friend}`)}
+          style={{
+            padding: 10,
+            cursor: "pointer",
+            borderBottom: "1px solid #ddd"
+          }}
         >
-          @{f}
+          @{friend}
         </div>
       ))}
     </div>
