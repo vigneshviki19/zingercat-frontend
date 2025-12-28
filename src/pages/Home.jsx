@@ -6,32 +6,48 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const username = localStorage.getItem("username");
   const dept = localStorage.getItem("dept") || "CSE";
-  const college = "PSG Tech";
+  const college = localStorage.getItem("college") || "PSG Tech";
 
+  /* Load all posts */
   useEffect(() => {
     loadPosts();
   }, []);
 
   async function loadPosts() {
-    const data = await getPosts();
-    setPosts(data);
+    try {
+      const data = await getPosts();
+      setPosts(data || []);
+    } catch (err) {
+      console.error("Failed to load posts", err);
+    }
   }
 
+  /* Create post */
   async function handlePost() {
-    if (!content && !image) return;
+    if (!content.trim() && !image) return;
 
     const formData = new FormData();
     formData.append("content", content);
     if (image) formData.append("image", image);
 
-    await createPost(formData);
-    setContent("");
-    setImage(null);
-    loadPosts();
+    try {
+      setLoading(true);
+      await createPost(formData);
+      setContent("");
+      setImage(null);
+      loadPosts();
+    } catch (err) {
+      console.error("Post failed", err);
+      alert("Post failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -39,52 +55,76 @@ export default function Home() {
       <h2>🐱 Zinger Cat Feed</h2>
 
       {/* CREATE POST */}
-      <textarea
-        placeholder="Speak your mind..."
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        style={{ width: "100%", height: 80 }}
-      />
+      <div
+        style={{
+          background: "#fff",
+          padding: 12,
+          borderRadius: 8,
+          marginBottom: 20
+        }}
+      >
+        <textarea
+          placeholder="Speak your mind..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          style={{
+            width: "100%",
+            height: 80,
+            resize: "none",
+            padding: 8
+          }}
+        />
 
-      <input
-        type="file"
-        onChange={(e) => setImage(e.target.files[0])}
-        style={{ marginTop: 8 }}
-      />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files[0])}
+          style={{ marginTop: 8 }}
+        />
 
-      <button onClick={handlePost} style={{ marginTop: 8 }}>
-        Post
-      </button>
-
-      <hr />
+        <button
+          onClick={handlePost}
+          disabled={loading}
+          style={{ marginTop: 8 }}
+        >
+          {loading ? "Posting..." : "Post"}
+        </button>
+      </div>
 
       {/* FEED */}
+      {posts.length === 0 && <p>No posts yet.</p>}
+
       {posts.map((post) => (
         <div
           key={post._id}
           style={{
-            borderBottom: "1px solid #ddd",
-            paddingBottom: 15,
-            marginBottom: 15
+            background: "#fff",
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 16
           }}
         >
           {/* USER INFO */}
-          <div style={{ fontWeight: "bold" }}>
-            @{post.author}
-          </div>
+          <div style={{ fontWeight: "bold" }}>@{post.author}</div>
           <div style={{ fontSize: 12, color: "#555" }}>
             {dept} · {college}
           </div>
 
           {/* CONTENT */}
-          <p style={{ marginTop: 8 }}>{post.content}</p>
+          {post.content && (
+            <p style={{ marginTop: 8 }}>{post.content}</p>
+          )}
 
           {/* IMAGE */}
           {post.image && (
             <img
               src={`https://zingercat-backend.onrender.com/uploads/${post.image}`}
-              alt=""
-              style={{ width: "100%", borderRadius: 6 }}
+              alt="post"
+              style={{
+                width: "100%",
+                borderRadius: 6,
+                marginTop: 8
+              }}
             />
           )}
 
