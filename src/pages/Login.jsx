@@ -1,50 +1,46 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 export default function Login() {
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await axios.post(
-        "https://zingercat-backend.onrender.com/api/auth/login",
-        { email, password }
-      );
+      const res = await api.post("/auth/login", { email, password });
 
-      // 🔐 Save auth data
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
-      localStorage.setItem("profileDone", "true"); // login users already have profile
 
-      // ✅ GO DIRECTLY TO HOME
-      navigate("/home");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      // ❗ DO NOT SET profileDone HERE
+      // let App.jsx decide
+
+      navigate("/home", { replace: true });
+    } catch {
+      setError("Invalid email or password");
     }
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: "60px auto" }}>
-      <h2>😺 Welcome back, Meow!</h2>
-      <p>Login to continue</p>
+    <div style={{ padding: 40 }}>
+      <h2>🐱 Welcome back, Meow!</h2>
 
       <form onSubmit={handleLogin}>
         <input
           type="email"
-          placeholder="College Email (example@psgtech.ac.in)"
+          placeholder="College Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
+        <br /><br />
 
         <input
           type="password"
@@ -52,30 +48,13 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
+        <br /><br />
 
-        {error && (
-          <p style={{ color: "red", marginBottom: 10 }}>{error}</p>
-        )}
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <button
-          type="submit"
-          style={{ width: "100%", padding: 10 }}
-        >
-          Login 🐾
-        </button>
+        <button type="submit">Login 😺</button>
       </form>
-
-      <p style={{ marginTop: 15 }}>
-        New here?{" "}
-        <span
-          style={{ color: "blue", cursor: "pointer" }}
-          onClick={() => navigate("/register")}
-        >
-          Create an account
-        </span>
-      </p>
     </div>
   );
 }
