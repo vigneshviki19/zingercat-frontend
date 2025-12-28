@@ -1,113 +1,92 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Register() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const COLLEGE_DOMAIN = "@psgtech.ac.in";
 
   const handleRegister = async (e) => {
-  const res = await axios.post(
-  "https://zingercat-backend.onrender.com/api/auth/register",
-  { email, password }
-);
+    e.preventDefault();
+    setError("");
 
-console.log("REGISTER RESPONSE:", res.data);
-
+    if (!email.endsWith("@psgtech.ac.in")) {
+      return setError("Use college email (@psgtech.ac.in)");
     }
 
-    // ✅ Password check
-    if (password.length < 6) {
-      return setError("Password must be at least 6 characters");
-    }
-
-    // ✅ Confirm password
-    if (password !== confirmPassword) {
+    if (password !== confirm) {
       return setError("Passwords do not match");
     }
 
     try {
-      setLoading(true);
-
       const res = await axios.post(
         "https://zingercat-backend.onrender.com/api/auth/register",
         { email, password }
       );
 
-      // save auth
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("profileDone", "false");
 
-      // 🔥 redirect to profile setup
-      navigate("/profile-setup");
+      navigate(`/profile/${res.data.username}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+      setError(err.response?.data?.message || "Register failed");
     }
   };
 
   return (
     <div style={{ maxWidth: 400, margin: "60px auto" }}>
       <h2>🐱 Join Zinger Cat</h2>
-      <p>Create your cat identity ✨</p>
 
       <form onSubmit={handleRegister}>
         <input
-          type="email"
-          placeholder={`Email (${COLLEGE_DOMAIN})`}
+          placeholder="College Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          style={input}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         <input
           type="password"
-          placeholder="Create password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          style={input}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         <input
           type="password"
-          placeholder="Confirm password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm Password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          style={input}
           required
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
         />
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ width: "100%", padding: 10 }}
-        >
-          {loading ? "Creating account..." : "Register 🐾"}
-        </button>
+        <button style={button}>Register 🐾</button>
       </form>
-
-      <p style={{ marginTop: 15 }}>
-        Already a cat?{" "}
-        <span
-          style={{ color: "blue", cursor: "pointer" }}
-          onClick={() => navigate("/login")}
-        >
-          Login
-        </span>
-      </p>
     </div>
   );
 }
+
+const input = {
+  width: "100%",
+  padding: 10,
+  marginBottom: 10
+};
+
+const button = {
+  width: "100%",
+  padding: 12,
+  background: "black",
+  color: "white",
+  border: "none"
+};
