@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 export default function Login() {
@@ -7,23 +6,25 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
-
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", {
+        email,
+        password
+      });
 
+      // 🔥 SAVE AUTH
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
 
-      // ❗ DO NOT SET profileDone HERE
-      // let App.jsx decide
+      // ❌ DO NOT TOUCH profileDone here
 
-      navigate("/home", { replace: true });
-    } catch {
+      // 🔥 FORCE FULL APP RELOAD
+      window.location.href = "/home";
+    } catch (err) {
       setError("Invalid email or password");
     }
   }
@@ -31,6 +32,7 @@ export default function Login() {
   return (
     <div style={{ padding: 40 }}>
       <h2>🐱 Welcome back, Meow!</h2>
+      <p>Login to continue</p>
 
       <form onSubmit={handleLogin}>
         <input
