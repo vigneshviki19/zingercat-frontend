@@ -55,5 +55,14 @@ export const acceptFriend = async (username) => {
   const res = await api.post(`/friends/accept/${username}`);
   return res.data;
 };
+export const createPost = async (formData) => {
+  const res = await api.post("/posts", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+  return res.data;
+};
+
 
 export default api;
