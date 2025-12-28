@@ -64,5 +64,4 @@ export const createPost = async (formData) => {
   return res.data;
 };
 
-
 export default api;
