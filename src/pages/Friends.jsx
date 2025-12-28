@@ -31,8 +31,7 @@ export default function Friends() {
             padding: 10,
             cursor: "pointer",
             borderBottom: "1px solid #ddd"
-          }}
-        >
+          }}        >
           @{friend}
         </div>
       ))}
