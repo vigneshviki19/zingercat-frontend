@@ -10,7 +10,6 @@ export default function Home() {
 
   const navigate = useNavigate();
 
-  const username = localStorage.getItem("username");
   const dept = localStorage.getItem("dept") || "CSE";
   const college = localStorage.getItem("college") || "PSG Tech";
 
@@ -158,7 +157,6 @@ export default function Home() {
           >
             <span onClick={() => handleLike(post._id)}>
               ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
-
             </span>
 
             <span>💬 Comment</span>
