@@ -4,71 +4,67 @@ import { getComments, addComment } from "../api";
 export default function Comments({ postId }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
+  const [replyTo, setReplyTo] = useState(null);
 
   useEffect(() => {
-    load();
+    loadComments();
   }, []);
 
-  async function load() {
+  async function loadComments() {
     const data = await getComments(postId);
     setComments(data);
   }
 
-  async function submit(parentComment = null) {
+  async function handleSubmit() {
     if (!text.trim()) return;
 
     await addComment({
       postId,
-      content: text,
-      parentComment
+      text,
+      parentId: replyTo
     });
 
     setText("");
-    load();
+    setReplyTo(null);
+    loadComments();
+  }
+
+  // Recursive render (Reddit-style)
+  function renderComments(parentId = null, level = 0) {
+    return comments
+      .filter(c => c.parentId === parentId)
+      .map(c => (
+        <div key={c._id} style={{ marginLeft: level * 20 }}>
+          <div style={{ fontWeight: "bold" }}>@{c.author}</div>
+          <div>{c.text}</div>
+
+          <span
+            style={{ fontSize: 12, cursor: "pointer", color: "blue" }}
+            onClick={() => setReplyTo(c._id)}
+          >
+            Reply
+          </span>
+
+          {renderComments(c._id, level + 1)}
+        </div>
+      ));
   }
 
   return (
     <div style={{ marginTop: 10 }}>
-      <input
-        placeholder="Write a comment…"
+      <textarea
+        placeholder={replyTo ? "Reply..." : "Add a comment..."}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        style={{ width: "100%", padding: 6 }}
+        style={{ width: "100%" }}
       />
-      <button onClick={() => submit(null)}>Comment</button>
+      <button onClick={handleSubmit}>
+        {replyTo ? "Reply" : "Comment"}
+      </button>
 
-      {comments
-        .filter((c) => !c.parentComment)
-        .map((c) => (
-          <div key={c._id} style={{ marginTop: 10 }}>
-            <b>@{c.author}</b>
-            <p>{c.content}</p>
-
-            {/* Replies */}
-            {comments
-              .filter((r) => r.parentComment === c._id)
-              .map((r) => (
-                <div
-                  key={r._id}
-                  style={{
-                    marginLeft: 20,
-                    borderLeft: "2px solid #ddd",
-                    paddingLeft: 10
-                  }}
-                >
-                  <b>@{r.author}</b>
-                  <p>{r.content}</p>
-                </div>
-              ))}
-
-            <button
-              onClick={() => submit(c._id)}
-              style={{ fontSize: 12 }}
-            >
-              Reply
-            </button>
-          </div>
-        ))}
+      <div style={{ marginTop: 10 }}>
+        {renderComments()}
+      </div>
     </div>
   );
 }
