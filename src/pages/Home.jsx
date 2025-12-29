@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { getPosts, createPost, likePost } from "../api";
 import { useNavigate } from "react-router-dom";
+import Comments from "../components/Comments"; // ✅ REQUIRED
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [openComments, setOpenComments] = useState(null);
 
+  // 🔥 controls which post's comments are open
+  const [openComments, setOpenComments] = useState(null);
 
   const navigate = useNavigate();
 
@@ -69,7 +71,7 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h2 style={{ marginBottom: 10 }}>🐱 Zinger Cat Feed</h2>
+      <h2>🐱 Zinger Cat Feed</h2>
 
       {/* ================= CREATE POST ================= */}
       <div
@@ -130,9 +132,7 @@ export default function Home() {
           </div>
 
           {/* CONTENT */}
-          {post.content && (
-            <p style={{ marginTop: 8 }}>{post.content}</p>
-          )}
+          {post.content && <p style={{ marginTop: 8 }}>{post.content}</p>}
 
           {/* IMAGE */}
           {post.image && (
@@ -161,19 +161,25 @@ export default function Home() {
               ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
             </span>
 
-            <span onClick={() => 
-  setOpenComments(
-    openComments === post._id ? null : post._id
-  )
-}>
-  💬 Comment
-</span>
-
+            <span
+              onClick={() =>
+                setOpenComments(
+                  openComments === post._id ? null : post._id
+                )
+              }
+            >
+              💬 Comment
+            </span>
 
             <span onClick={() => navigate(`/chat/${post.author}`)}>
               🔗 Share
             </span>
           </div>
+
+          {/* 🔥 COMMENTS SECTION (THIS WAS MISSING) */}
+          {openComments === post._id && (
+            <Comments postId={post._id} />
+          )}
 
           <div style={{ fontSize: 11, color: "#888", marginTop: 6 }}>
             {new Date(post.createdAt).toLocaleString()}
