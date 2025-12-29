@@ -1,15 +1,15 @@
 import axios from "axios";
 
-/**
- * AXIOS INSTANCE
- */
+/* =========================
+   AXIOS INSTANCE
+========================= */
 const api = axios.create({
   baseURL: "https://zingercat-backend.onrender.com/api"
 });
 
-/**
- * ATTACH JWT TOKEN AUTOMATICALLY
- */
+/* =========================
+   AUTO ATTACH JWT TOKEN
+========================= */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -24,7 +24,6 @@ api.interceptors.request.use(
 /* =========================
    AUTH
 ========================= */
-
 export const registerUser = async (data) => {
   const res = await api.post("/auth/register", data);
   return res.data;
@@ -39,7 +38,7 @@ export const loginUser = async (data) => {
    POSTS
 ========================= */
 
-// Get all posts (feed)
+// Get all posts (home feed)
 export const getPosts = async () => {
   const res = await api.get("/posts");
   return res.data;
@@ -55,7 +54,7 @@ export const createPost = async (formData) => {
   return res.data;
 };
 
-// Like post (future-ready)
+// Like post
 export const likePost = async (postId) => {
   const res = await api.post(`/posts/${postId}/like`);
   return res.data;
@@ -71,7 +70,7 @@ export const getProfile = async (username) => {
   return res.data;
 };
 
-// Update / edit profile
+// Update own profile
 export const updateProfile = async (data) => {
   const res = await api.put("/profile", data);
   return res.data;
@@ -111,4 +110,7 @@ export const acceptFriend = async (username) => {
   return res.data;
 };
 
+/* =========================
+   EXPORT AXIOS INSTANCE
+========================= */
 export default api;
