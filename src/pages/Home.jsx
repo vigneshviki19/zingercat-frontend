@@ -116,17 +116,13 @@ export default function Home() {
           )}
 
           {/* IMAGE */}
-          {post.image && (
-            <img
-              src={`https://zingercat-backend.onrender.com/uploads/${post.image}`}
-              alt="post"
-              style={{
-                width: "100%",
-                borderRadius: 6,
-                marginTop: 8
-              }}
-            />
-          )}
+        {post.image && (
+  <img
+    src={post.image}
+    alt="post"
+    style={{ width: "100%", borderRadius: 8, marginTop: 8 }}
+  />
+)}
 
           {/* ACTIONS */}
           <div
