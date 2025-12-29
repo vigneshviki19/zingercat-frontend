@@ -7,6 +7,8 @@ export default function Home() {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [openComments, setOpenComments] = useState(null);
+
 
   const navigate = useNavigate();
 
@@ -159,7 +161,14 @@ export default function Home() {
               ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
             </span>
 
-            <span>💬 Comment</span>
+            <span onClick={() => 
+  setOpenComments(
+    openComments === post._id ? null : post._id
+  )
+}>
+  💬 Comment
+</span>
+
 
             <span onClick={() => navigate(`/chat/${post.author}`)}>
               🔗 Share
