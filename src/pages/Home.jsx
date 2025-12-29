@@ -157,7 +157,8 @@ export default function Home() {
             }}
           >
             <span onClick={() => handleLike(post._id)}>
-              ❤️ {post.likes?.length || 0}
+              ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
+
             </span>
 
             <span>💬 Comment</span>
