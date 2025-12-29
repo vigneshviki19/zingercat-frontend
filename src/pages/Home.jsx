@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getPosts, createPost } from "../api";
+import { getPosts, createPost, likePost } from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -14,7 +14,9 @@ export default function Home() {
   const dept = localStorage.getItem("dept") || "CSE";
   const college = localStorage.getItem("college") || "PSG Tech";
 
-  /* Load all posts */
+  /* =========================
+     LOAD POSTS
+  ========================= */
   useEffect(() => {
     loadPosts();
   }, []);
@@ -22,13 +24,15 @@ export default function Home() {
   async function loadPosts() {
     try {
       const data = await getPosts();
-      setPosts(data || []);
+      setPosts(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Failed to load posts", err);
+      console.error("LOAD POSTS ERROR:", err);
     }
   }
 
-  /* Create post */
+  /* =========================
+     CREATE POST
+  ========================= */
   async function handlePost() {
     if (!content.trim() && !image) return;
 
@@ -43,24 +47,37 @@ export default function Home() {
       setImage(null);
       loadPosts();
     } catch (err) {
-      console.error("Post failed", err);
+      console.error("POST ERROR:", err);
       alert("Post failed");
     } finally {
       setLoading(false);
     }
   }
 
+  /* =========================
+     LIKE POST
+  ========================= */
+  async function handleLike(postId) {
+    try {
+      await likePost(postId);
+      loadPosts();
+    } catch (err) {
+      console.error("LIKE ERROR:", err);
+    }
+  }
+
   return (
     <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h2>🐱 Zinger Cat Feed</h2>
+      <h2 style={{ marginBottom: 10 }}>🐱 Zinger Cat Feed</h2>
 
-      {/* CREATE POST */}
+      {/* ================= CREATE POST ================= */}
       <div
         style={{
           background: "#fff",
           padding: 12,
           borderRadius: 8,
-          marginBottom: 20
+          marginBottom: 20,
+          border: "1px solid #ddd"
         }}
       >
         <textarea
@@ -91,7 +108,7 @@ export default function Home() {
         </button>
       </div>
 
-      {/* FEED */}
+      {/* ================= FEED ================= */}
       {posts.length === 0 && <p>No posts yet.</p>}
 
       {posts.map((post) => (
@@ -101,7 +118,8 @@ export default function Home() {
             background: "#fff",
             padding: 12,
             borderRadius: 8,
-            marginBottom: 16
+            marginBottom: 16,
+            border: "1px solid #ddd"
           }}
         >
           {/* USER INFO */}
@@ -116,13 +134,17 @@ export default function Home() {
           )}
 
           {/* IMAGE */}
-        {post.image && (
-  <img
-    src={post.image}
-    alt="post"
-    style={{ width: "100%", borderRadius: 8, marginTop: 8 }}
-  />
-)}
+          {post.image && (
+            <img
+              src={post.image}
+              alt="post"
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                marginTop: 8
+              }}
+            />
+          )}
 
           {/* ACTIONS */}
           <div
@@ -134,8 +156,12 @@ export default function Home() {
               cursor: "pointer"
             }}
           >
-            <span>❤️ Like</span>
+            <span onClick={() => handleLike(post._id)}>
+              ❤️ {post.likes?.length || 0}
+            </span>
+
             <span>💬 Comment</span>
+
             <span onClick={() => navigate(`/chat/${post.author}`)}>
               🔗 Share
             </span>
