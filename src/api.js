@@ -59,6 +59,20 @@ export const likePost = async (postId) => {
   const res = await api.post(`/posts/${postId}/like`);
   return res.data;
 };
+/* =========================
+   COMMENTS
+========================= */
+
+export const getComments = async (postId) => {
+  const res = await api.get(`/comments/${postId}`);
+  return res.data;
+};
+
+export const addComment = async (data) => {
+  const res = await api.post("/comments", data);
+  return res.data;
+};
+
 
 /* =========================
    PROFILE
