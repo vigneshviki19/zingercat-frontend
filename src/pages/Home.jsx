@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
 import { getPosts, createPost, likePost } from "../api";
 import { useNavigate } from "react-router-dom";
-import Comments from "../components/Comments"; // ✅ REQUIRED
+import Comments from "../components/Comments";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // 🔥 controls which post's comments are open
   const [openComments, setOpenComments] = useState(null);
 
   const navigate = useNavigate();
 
+  const username = localStorage.getItem("username");
   const dept = localStorage.getItem("dept") || "CSE";
   const college = localStorage.getItem("college") || "PSG Tech";
 
@@ -50,7 +49,6 @@ export default function Home() {
       setImage(null);
       loadPosts();
     } catch (err) {
-      console.error("POST ERROR:", err);
       alert("Post failed");
     } finally {
       setLoading(false);
@@ -70,126 +68,175 @@ export default function Home() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h2 style={{ marginBottom: 10 }}>🐱 Zinger Cat Feed</h2>
+    <div style={{ background: "#f5f5f5", minHeight: "100vh" }}>
 
-      {/* ================= CREATE POST ================= */}
+      {/* ================= TOP NAV BAR ================= */}
       <div
         style={{
-          background: "#fff",
-          padding: 12,
-          borderRadius: 8,
-          marginBottom: 20,
-          border: "1px solid #ddd"
+          position: "sticky",
+          top: 0,
+          background: "#ffffff",
+          borderBottom: "1px solid #ddd",
+          padding: "10px 20px",
+          display: "flex",
+          justifyContent: "space-around",
+          zIndex: 100
         }}
       >
-        <textarea
-          placeholder="Speak your mind..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          style={{
-            width: "100%",
-            height: 80,
-            resize: "none",
-            padding: 8
-          }}
-        />
+        <span style={navItem} onClick={() => navigate(`/profile/${username}`)}>
+          👤 Profile
+        </span>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImage(e.target.files[0])}
-          style={{ marginTop: 8 }}
-        />
+        <span style={navItem} onClick={() => navigate("/search")}>
+          🔍 Search
+        </span>
 
-        <button
-          onClick={handlePost}
-          disabled={loading}
-          style={{ marginTop: 8 }}
-        >
-          {loading ? "Posting..." : "Post"}
-        </button>
+        <span style={navItem} onClick={() => navigate("/friends")}>
+          👥 Community
+        </span>
+
+        <span style={navItem} onClick={() => navigate("/chat")}>
+          💬 Messages
+        </span>
+
+        <span style={navItem} onClick={() => alert("Notifications coming soon")}>
+          🔔 Notifications
+        </span>
       </div>
 
-      {/* ================= FEED ================= */}
-      {posts.length === 0 && <p>No posts yet.</p>}
+      {/* ================= MAIN CONTENT ================= */}
+      <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
 
-      {posts.map((post) => (
+        {/* ================= CREATE POST ================= */}
         <div
-          key={post._id}
           style={{
             background: "#fff",
             padding: 12,
             borderRadius: 8,
-            marginBottom: 16,
+            marginBottom: 20,
             border: "1px solid #ddd"
           }}
         >
-          {/* USER INFO */}
-          <div style={{ fontWeight: "bold" }}>@{post.author}</div>
-          <div style={{ fontSize: 12, color: "#555" }}>
-            {dept} · {college}
-          </div>
-
-          {/* CONTENT */}
-          {post.content && (
-            <p style={{ marginTop: 8 }}>{post.content}</p>
-          )}
-
-          {/* IMAGE */}
-          {post.image && (
-            <img
-              src={post.image}
-              alt="post"
-              style={{
-                width: "100%",
-                borderRadius: 8,
-                marginTop: 8
-              }}
-            />
-          )}
-
-          {/* ACTIONS */}
-          <div
+          <textarea
+            placeholder="Speak your mind..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             style={{
-              display: "flex",
-              gap: 20,
-              marginTop: 10,
-              fontSize: 14,
+              width: "100%",
+              height: 80,
+              resize: "none",
+              padding: 8
+            }}
+          />
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImage(e.target.files[0])}
+            style={{ marginTop: 8 }}
+          />
+
+          <button
+            onClick={handlePost}
+            disabled={loading}
+            style={{
+              marginTop: 8,
+              padding: "6px 14px",
               cursor: "pointer"
             }}
           >
-            <span onClick={() => handleLike(post._id)}>
-              ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
-            </span>
-
-            <span
-              onClick={() =>
-                setOpenComments(
-                  openComments === post._id ? null : post._id
-                )
-              }
-            >
-              💬 Comment
-            </span>
-
-            <span onClick={() => navigate(`/chat/${post.author}`)}>
-              🔗 Share
-            </span>
-          </div>
-
-          {/* ================= COMMENTS SECTION ================= */}
-          {openComments === post._id && (
-            <div style={{ marginTop: 12 }}>
-              <Comments postId={post._id} />
-            </div>
-          )}
-
-          <div style={{ fontSize: 11, color: "#888", marginTop: 6 }}>
-            {new Date(post.createdAt).toLocaleString()}
-          </div>
+            {loading ? "Posting..." : "Post"}
+          </button>
         </div>
-      ))}
+
+        {/* ================= FEED ================= */}
+        {posts.length === 0 && <p>No posts yet.</p>}
+
+        {posts.map((post) => (
+          <div
+            key={post._id}
+            style={{
+              background: "#fff",
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 16,
+              border: "1px solid #ddd"
+            }}
+          >
+            {/* USER INFO */}
+            <div style={{ fontWeight: "bold" }}>@{post.author}</div>
+            <div style={{ fontSize: 12, color: "#555" }}>
+              {dept} · {college}
+            </div>
+
+            {/* CONTENT */}
+            {post.content && (
+              <p style={{ marginTop: 8 }}>{post.content}</p>
+            )}
+
+            {/* IMAGE */}
+            {post.image && (
+              <img
+                src={post.image}
+                alt="post"
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                  marginTop: 8
+                }}
+              />
+            )}
+
+            {/* ACTIONS */}
+            <div
+              style={{
+                display: "flex",
+                gap: 20,
+                marginTop: 10,
+                fontSize: 14,
+                cursor: "pointer"
+              }}
+            >
+              <span onClick={() => handleLike(post._id)}>
+                ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
+              </span>
+
+              <span
+                onClick={() =>
+                  setOpenComments(
+                    openComments === post._id ? null : post._id
+                  )
+                }
+              >
+                💬 Comment
+              </span>
+
+              <span onClick={() => navigate(`/chat/${post.author}`)}>
+                🔗 Share
+              </span>
+            </div>
+
+            {/* ================= COMMENTS ================= */}
+            {openComments === post._id && (
+              <div style={{ marginTop: 12 }}>
+                <Comments postId={post._id} />
+              </div>
+            )}
+
+            <div style={{ fontSize: 11, color: "#888", marginTop: 6 }}>
+              {new Date(post.createdAt).toLocaleString()}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+
+/* =========================
+   NAV STYLE
+========================= */
+const navItem = {
+  cursor: "pointer",
+  fontWeight: "bold"
+};
