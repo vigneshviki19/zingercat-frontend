@@ -67,19 +67,21 @@ export default function EditProfile() {
 
       <div style={{ display: "flex", gap: 10 }}>
         <select
-          name="startYear"
-          value={form.startYear}
-          onChange={handleChange}
-        >
-          {years()}
-        </select>
+  name="startYear"
+  value={form.startYear}
+  onChange={handleChange}
+>
+  {years()}
+</select>
 
-        <select
-          name="endYear"
-          value={form.endYear}
-          onChange={handleChange}
-        >
-          {years()}
+<select
+  name="endYear"
+  value={form.endYear}
+  onChange={handleChange}
+>
+  {years()}
+</select>
+
         </select>
       </div>
 
