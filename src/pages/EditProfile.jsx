@@ -9,52 +9,42 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
+    profilePic: "",
     name: "",
     dept: "",
     startYear: 2020,
     endYear: 2024,
-    about: "",
-    profilePic: ""
+    about: ""
   });
 
   /* =========================
      LOAD PROFILE
   ========================= */
   useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
-    try {
-      const data = await getProfile(username);
-      setForm({
-        name: data.name || "",
-        dept: data.dept || "",
-        startYear: data.startYear || 2020,
-        endYear: data.endYear || 2024,
-        about: data.about || "",
-        profilePic: data.profilePic || ""
-      });
-    } catch (err) {
-      console.error("PROFILE LOAD ERROR:", err);
-    } finally {
-      setLoading(false);
+    async function load() {
+      try {
+        const data = await getProfile(username);
+        setForm({
+          profilePic: data.profilePic || "",
+          name: data.name || "",
+          dept: data.dept || "",
+          startYear: data.startYear || 2020,
+          endYear: data.endYear || 2024,
+          about: data.about || ""
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+    load();
+  }, [username]);
 
-  /* =========================
-     HANDLE CHANGE
-  ========================= */
   function handleChange(e) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  /* =========================
-     SAVE PROFILE
-  ========================= */
   async function saveProfile() {
     try {
       await updateProfile({
@@ -62,56 +52,64 @@ export default function EditProfile() {
         startYear: Number(form.startYear),
         endYear: Number(form.endYear)
       });
-
       navigate(`/profile/${username}`);
     } catch (err) {
-      console.error("PROFILE SAVE ERROR:", err);
       alert("Failed to save profile");
     }
   }
 
-  if (loading) {
-    return <p style={{ textAlign: "center" }}>Loading profile...</p>;
-  }
+  if (loading) return <p style={{ textAlign: "center" }}>Loading...</p>;
 
   return (
-    <div style={{ maxWidth: 420, margin: "auto", padding: 20 }}>
-      <h2>Edit Profile</h2>
+    <div style={container}>
+      <h2 style={{ textAlign: "center" }}>Edit Profile</h2>
 
-      {/* PROFILE IMAGE */}
+      {/* PROFILE PHOTO */}
+      <label>Profile Photo</label>
       <input
         name="profilePic"
         value={form.profilePic}
         onChange={handleChange}
-        placeholder="Profile image URL"
-        style={{ width: "100%", marginBottom: 10 }}
+        placeholder="Paste image URL"
+        style={input}
       />
 
+      {form.profilePic && (
+        <img
+          src={form.profilePic}
+          alt="preview"
+          style={avatar}
+        />
+      )}
+
       {/* NAME */}
+      <label>Your Name</label>
       <input
         name="name"
         value={form.name}
         onChange={handleChange}
-        placeholder="Your Name"
-        style={{ width: "100%", marginBottom: 10 }}
+        placeholder="Enter your name"
+        style={input}
       />
 
       {/* DEPARTMENT */}
+      <label>Department</label>
       <input
         name="dept"
         value={form.dept}
         onChange={handleChange}
-        placeholder="Department (e.g. CSE)"
-        style={{ width: "100%", marginBottom: 10 }}
+        placeholder="CSE / ECE / IT"
+        style={input}
       />
 
-      {/* YEAR RANGE */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+      {/* YEAR */}
+      <label>Year of Study</label>
+      <div style={{ display: "flex", gap: 10 }}>
         <select
           name="startYear"
           value={form.startYear}
           onChange={handleChange}
-          style={{ flex: 1 }}
+          style={input}
         >
           {years()}
         </select>
@@ -120,28 +118,23 @@ export default function EditProfile() {
           name="endYear"
           value={form.endYear}
           onChange={handleChange}
-          style={{ flex: 1 }}
+          style={input}
         >
           {years()}
         </select>
       </div>
 
       {/* ABOUT */}
+      <label>About You (max 120 chars)</label>
       <textarea
         name="about"
         value={form.about}
-        maxLength={120}
         onChange={handleChange}
-        placeholder="About you (max 120 characters)"
-        style={{
-          width: "100%",
-          height: 80,
-          resize: "none",
-          marginBottom: 10
-        }}
+        maxLength={120}
+        style={{ ...input, height: 80 }}
       />
 
-      <button onClick={saveProfile} style={{ width: "100%" }}>
+      <button onClick={saveProfile} style={btn}>
         Save Profile
       </button>
     </div>
@@ -149,16 +142,48 @@ export default function EditProfile() {
 }
 
 /* =========================
-   YEARS DROPDOWN
+   YEARS
 ========================= */
 function years() {
-  const arr = [];
+  const list = [];
   for (let y = 2010; y <= 2050; y++) {
-    arr.push(
+    list.push(
       <option key={y} value={y}>
         {y}
       </option>
     );
   }
-  return arr;
+  return list;
 }
+
+/* =========================
+   STYLES
+========================= */
+const container = {
+  maxWidth: 420,
+  margin: "auto",
+  padding: 20,
+  display: "flex",
+  flexDirection: "column",
+  gap: 8
+};
+
+const input = {
+  padding: 8,
+  width: "100%",
+  boxSizing: "border-box"
+};
+
+const btn = {
+  marginTop: 10,
+  padding: 10,
+  cursor: "pointer"
+};
+
+const avatar = {
+  width: 100,
+  height: 100,
+  objectFit: "cover",
+  borderRadius: "50%",
+  margin: "10px auto"
+};
