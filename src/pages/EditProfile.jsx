@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { updateProfile } from "../api";
+import { useEffect, useState } from "react";
+import { getProfile, updateProfile } from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function EditProfile() {
   const navigate = useNavigate();
+  const username = localStorage.getItem("username");
 
   const [form, setForm] = useState({
     name: "",
@@ -14,70 +15,91 @@ export default function EditProfile() {
     profilePic: ""
   });
 
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  async function loadProfile() {
+    const data = await getProfile(username);
+    setForm({
+      name: data.name || "",
+      dept: data.dept || "",
+      startYear: data.startYear || 2020,
+      endYear: data.endYear || 2024,
+      about: data.about || "",
+      profilePic: data.profilePic || ""
+    });
+  }
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function saveProfile() {
     await updateProfile(form);
-    navigate(`/profile/${localStorage.getItem("username")}`);
+    navigate(`/profile/${username}`);
   }
 
   return (
-    <div style={container}>
-      <h2>Complete Your Profile</h2>
+    <div style={{ maxWidth: 400, margin: "auto", padding: 20 }}>
+      <h2>Edit Profile</h2>
 
-      {/* PROFILE PHOTO URL */}
       <input
         name="profilePic"
-        placeholder="Profile image URL (optional)"
+        value={form.profilePic}
         onChange={handleChange}
+        placeholder="Profile image URL"
       />
 
-      <input name="name" placeholder="Your Name" onChange={handleChange} />
-      <input name="dept" placeholder="Department" onChange={handleChange} />
+      <input
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Your Name"
+      />
 
-      {/* YEAR SELECT */}
+      <input
+        name="dept"
+        value={form.dept}
+        onChange={handleChange}
+        placeholder="Department"
+      />
+
       <div style={{ display: "flex", gap: 10 }}>
-        <select name="startYear" onChange={handleChange}>
-          {yearOptions()}
+        <select
+          name="startYear"
+          value={form.startYear}
+          onChange={handleChange}
+        >
+          {years()}
         </select>
 
-        <select name="endYear" onChange={handleChange}>
-          {yearOptions()}
+        <select
+          name="endYear"
+          value={form.endYear}
+          onChange={handleChange}
+        >
+          {years()}
         </select>
       </div>
 
-      {/* ABOUT */}
       <textarea
         name="about"
+        value={form.about}
         maxLength={120}
-        placeholder="About you (max 120 words)"
         onChange={handleChange}
+        placeholder="About you (120 words)"
       />
 
-      <button onClick={saveProfile}>Save Profile ✅</button>
+      <button onClick={saveProfile}>Save</button>
     </div>
   );
 }
 
-function yearOptions() {
-  const years = [];
+function years() {
+  const arr = [];
   for (let y = 2010; y <= 2050; y++) {
-    years.push(
-      <option key={y} value={y}>
-        {y}
-      </option>
-    );
+    arr.push(<option key={y}>{y}</option>);
   }
-  return years;
+  return arr;
 }
-
-const container = {
-  maxWidth: 400,
-  margin: "auto",
-  padding: 20,
-  display: "flex",
-  flexDirection: "column",
-  gap: 10
-};
