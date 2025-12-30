@@ -31,9 +31,13 @@ export default function EditProfile() {
     });
   }
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
+ function handleChange(e) {
+  setForm({
+    ...form,
+    [e.target.name]: e.target.value
+  });
+}
+
 
   async function saveProfile() {
     await updateProfile(form);
