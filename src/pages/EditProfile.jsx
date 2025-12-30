@@ -101,7 +101,11 @@ export default function EditProfile() {
 function years() {
   const arr = [];
   for (let y = 2010; y <= 2050; y++) {
-    arr.push(<option key={y}>{y}</option>);
+    arr.push(
+      <option key={y} value={y}>
+        {y}
+      </option>
+    );
   }
   return arr;
 }
