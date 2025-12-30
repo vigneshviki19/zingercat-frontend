@@ -1,56 +1,106 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getProfile } from "../api";
+
+const DEFAULT_AVATAR =
+  "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 export default function Profile() {
   const { username } = useParams();
   const navigate = useNavigate();
-  const myUsername = localStorage.getItem("username");
-
   const [profile, setProfile] = useState(null);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadProfile() {
-      try {
-        const data = await getProfile(username);
-
-        // 🚫 Not friend and not self → block
-        if (!data.isSelf && !data.isFriend) {
-          setError("🚫 You can only view your friends’ profiles.");
-          return;
-        }
-
-        setProfile(data);
-      } catch (err) {
-        setError("Failed to load profile");
-      }
-    }
-
     loadProfile();
-  }, [username]);
+  }, []);
 
-  if (error) {
-    return <p style={{ color: "red", textAlign: "center" }}>{error}</p>;
+  async function loadProfile() {
+    const data = await getProfile(username);
+    setProfile(data);
   }
 
-  if (!profile) return <p>Loading profile...</p>;
+  if (!profile) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={container}>
+      {/* PROFILE IMAGE */}
+      <img
+        src={profile.profilePic || DEFAULT_AVATAR}
+        alt="profile"
+        style={avatar}
+      />
+
+      {/* USERNAME */}
       <h2>@{profile.username}</h2>
 
-      <p>{profile.about || "No bio yet"}</p>
+      {/* NAME */}
+      <h3>{profile.name || "Your Name"}</h3>
 
-      <p>👥 Friends: {profile.friends.length}</p>
-      <p>📝 Posts: {profile.postCount}</p>
+      {/* DEPT + YEAR */}
+      <p style={{ color: "#666" }}>
+        {profile.dept || "Department"} ·{" "}
+        {profile.startYear || "YYYY"} - {profile.endYear || "YYYY"}
+      </p>
 
-      {/* ✏️ Edit button ONLY for self */}
-      {profile.isSelf && (
+      {/* ABOUT */}
+      <p style={about}>{profile.about || "No bio yet"}</p>
+
+      {/* STATS */}
+      <div style={stats}>
+        <div
+          style={statItem}
+          onClick={() => navigate(`/profile/${username}/friends`)}
+        >
+          <strong>{profile.friends?.length || 0}</strong>
+          <span>Friends</span>
+        </div>
+
+        <div
+          style={statItem}
+          onClick={() => navigate(`/profile/${username}/posts`)}
+        >
+          <strong>{profile.postsCount || 0}</strong>
+          <span>Posts</span>
+        </div>
+      </div>
+
+      {/* EDIT BUTTON (ONLY OWN PROFILE) */}
+      {username === localStorage.getItem("username") && (
         <button onClick={() => navigate("/edit-profile")}>
-          ✏️ Edit Profile
+          Edit Profile ✏️
         </button>
       )}
     </div>
   );
 }
+
+/* ================= STYLES ================= */
+const container = {
+  maxWidth: 500,
+  margin: "auto",
+  textAlign: "center",
+  padding: 20
+};
+
+const avatar = {
+  width: 120,
+  height: 120,
+  borderRadius: "50%",
+  objectFit: "cover"
+};
+
+const about = {
+  marginTop: 12,
+  lineHeight: 1.5
+};
+
+const stats = {
+  display: "flex",
+  justifyContent: "space-around",
+  marginTop: 20,
+  cursor: "pointer"
+};
+
+const statItem = {
+  textAlign: "center"
+};
