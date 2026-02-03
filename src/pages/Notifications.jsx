@@ -17,10 +17,20 @@ export default function Notifications() {
     <div style={{ maxWidth: 400, margin: "auto" }}>
       <h2>🔔 Friend Requests</h2>
 
+      {requests.length === 0 && <p>No requests</p>}
+
       {requests.map((u) => (
-        <div key={u._id}>
+        <div key={u._id} style={{ marginBottom: 10 }}>
           @{u.username}
-          <button onClick={() => acceptFriend(u._id)}>Accept</button>
+          <button
+            style={{ marginLeft: 10 }}
+            onClick={async () => {
+              await acceptFriend(u._id);
+              load();
+            }}
+          >
+            Accept
+          </button>
         </div>
       ))}
     </div>
