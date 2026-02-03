@@ -71,39 +71,39 @@ export default function Home() {
     <div style={{ background: "#f5f5f5", minHeight: "100vh" }}>
 
       {/* ================= TOP NAV BAR ================= */}
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          background: "#ffffff",
-          borderBottom: "1px solid #ddd",
-          padding: "10px 20px",
-          display: "flex",
-          justifyContent: "space-around",
-          zIndex: 100
-        }}
-      >
-        <span style={navItem} onClick={() => navigate(`/profile/${username}`)}>
-          👤 Profile
-        </span>
-
-        <span style={navItem} onClick={() => navigate("/search")}>
-          🔍 Search
-        </span>
-
-        <span style={navItem} onClick={() => navigate("/friends")}>
-          👥 Community
-        </span>
-
-        <span style={navItem} onClick={() => navigate("/chat")}>
-          💬 Messages
-        </span>
-
-        <span style={navItem} onClick={() => navigate("/notifications")}>
+<div
+  style={{
+    position: "sticky",
+    top: 0,
+    background: "#ffffff",
+    borderBottom: "1px solid #ddd",
+    padding: "10px 20px",
+    display: "flex",
+    justifyContent: "space-around",
+    zIndex: 100
+  }}
 >
-          🔔 Notifications
-        </span>
-      </div>
+  <span style={navItem} onClick={() => navigate(`/profile/${username}`)}>
+    👤 Profile
+  </span>
+
+  <span style={navItem} onClick={() => navigate("/search")}>
+    🔍 Search
+  </span>
+
+  <span style={navItem} onClick={() => navigate("/friends")}>
+    👥 Community
+  </span>
+
+  <span style={navItem} onClick={() => navigate("/chat")}>
+    💬 Messages
+  </span>
+
+  <span style={navItem} onClick={() => navigate("/notifications")}>
+    🔔 Notifications
+  </span>
+</div>
+
 
       {/* ================= MAIN CONTENT ================= */}
       <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
