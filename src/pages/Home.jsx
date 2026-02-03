@@ -99,7 +99,8 @@ export default function Home() {
           💬 Messages
         </span>
 
-        <span style={navItem} onClick={() => alert("Notifications coming soon")}>
+        <span style={navItem} onClick={() => navigate("/notifications")}>
+>
           🔔 Notifications
         </span>
       </div>
