@@ -16,72 +16,135 @@ export default function Profile() {
   const myUsername = localStorage.getItem("username");
 
   const [profile, setProfile] = useState(null);
-  const [status, setStatus] = useState("none");
+  const [status, setStatus] = useState("none"); 
+  // none | requested | friends
 
+  /* =========================
+     LOAD DATA
+  ========================= */
   useEffect(() => {
     loadProfile();
-    loadStatus();
+    checkFriendStatus();
   }, [username]);
 
   async function loadProfile() {
-    const data = await getProfile(username);
-    setProfile(data);
+    try {
+      const data = await getProfile(username);
+      setProfile(data);
+    } catch (err) {
+      console.error("PROFILE LOAD ERROR:", err);
+    }
   }
 
-  async function loadStatus() {
+  async function checkFriendStatus() {
     if (username === myUsername) return;
 
-    const friends = await getFriends();
-    if (friends.find(f => f.username === username)) {
-      setStatus("friends");
-      return;
-    }
+    try {
+      const friends = await getFriends();
+      if (friends.some(f => f.username === username)) {
+        setStatus("friends");
+        return;
+      }
 
-    const requests = await getFriendRequests();
-    if (requests.find(r => r.username === myUsername)) {
-      setStatus("requested");
+      const requests = await getFriendRequests();
+      if (requests.some(r => r.username === myUsername)) {
+        setStatus("requested");
+      }
+    } catch (err) {
+      console.error("FRIEND STATUS ERROR:", err);
     }
   }
 
   async function handleAddFriend() {
-    await sendFriendRequest(username);
-    setStatus("requested");
+    try {
+      await sendFriendRequest(username);
+      setStatus("requested");
+    } catch {
+      alert("Failed to send request");
+    }
   }
 
-  if (!profile) return <p>Loading...</p>;
+  if (!profile) return <p>Loading profile...</p>;
 
   const isMe = profile.username === myUsername;
 
   return (
     <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <button onClick={() => navigate("/home")}>🏠 Home</button>
 
-      <div style={{ textAlign: "center", marginTop: 20 }}>
+      {/* ================= TOP BAR ================= */}
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <button onClick={() => navigate("/home")}>🏠 Home</button>
+
+        {isMe && (
+          <button onClick={() => navigate("/edit-profile")}>
+            ✏️ Edit Profile
+          </button>
+        )}
+      </div>
+
+      {/* ================= PROFILE CARD ================= */}
+      <div
+        style={{
+          background: "#fff",
+          marginTop: 20,
+          padding: 20,
+          borderRadius: 10,
+          border: "1px solid #ddd",
+          textAlign: "center"
+        }}
+      >
         <img
           src={profile.profilePic || DEFAULT_AVATAR}
-          style={{ width: 120, height: 120, borderRadius: "50%" }}
+          alt="profile"
+          style={{
+            width: 130,
+            height: 130,
+            borderRadius: "50%",
+            objectFit: "cover"
+          }}
         />
 
         <h2>@{profile.username}</h2>
-        <p>{profile.name}</p>
-        <p>{profile.dept}</p>
-        <p>{profile.startYear} – {profile.endYear}</p>
-        <p>{profile.about}</p>
+        <p>{profile.name || "No name"}</p>
+        <p>{profile.dept || "No department"}</p>
+        <p>
+          {profile.startYear} – {profile.endYear}
+        </p>
+        <p style={{ marginTop: 10 }}>
+          {profile.about || "No bio yet"}
+        </p>
 
+        {/* ================= FRIEND BUTTON ================= */}
         {!isMe && (
-          <>
+          <div style={{ marginTop: 15 }}>
             {status === "friends" && <button disabled>✅ Friends</button>}
             {status === "requested" && <button disabled>⏳ Request Sent</button>}
             {status === "none" && (
               <button onClick={handleAddFriend}>➕ Add Friend</button>
             )}
-          </>
+          </div>
         )}
 
-        <div style={{ marginTop: 20 }}>
-          <span onClick={() => navigate(`/friends/${username}`)}>👥 Friends</span>{" "}
-          |{" "}
-          <span onClick={() => navigate(`/user-posts/${username}`)}>📝 Posts</span>
+        {/* ================= STATS ================= */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 30,
+            marginTop: 20,
+            fontWeight: "bold"
+          }}
+        >
+          <span
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate("/friends")}
+          >
+            👥 Friends ({profile.friends?.length || 0})
+          </span>
+
+          <span>
+            📝 Posts ({profile.postsCount || 0})
+          </span>
         </div>
       </div>
     </div>
