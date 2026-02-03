@@ -99,28 +99,24 @@ export const searchUsers = async (query) => {
 /* =========================
    FRIENDS
 ========================= */
-
-// Send friend request
+// FRIEND SYSTEM
 export const sendFriendRequest = async (username) => {
   const res = await api.post(`/friends/request/${username}`);
   return res.data;
 };
 
-// Get friends list
-export const getFriends = async () => {
-  const res = await api.get("/friends");
-  return res.data;
-};
-
-// Get friend requests
 export const getFriendRequests = async () => {
   const res = await api.get("/friends/requests");
   return res.data;
 };
 
-// Accept friend request
-export const acceptFriend = async (username) => {
-  const res = await api.post(`/friends/accept/${username}`);
+export const acceptFriend = async (userId) => {
+  const res = await api.post(`/friends/accept/${userId}`);
+  return res.data;
+};
+
+export const getFriends = async () => {
+  const res = await api.get("/friends");
   return res.data;
 };
 
