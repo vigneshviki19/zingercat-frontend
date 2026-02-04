@@ -48,7 +48,7 @@ export default function Home() {
       setContent("");
       setImage(null);
       loadPosts();
-    } catch (err) {
+    } catch {
       alert("Post failed");
     } finally {
       setLoading(false);
@@ -67,47 +67,60 @@ export default function Home() {
     }
   }
 
+  /* =========================
+     LOGOUT
+  ========================= */
+  function handleLogout() {
+    localStorage.clear();
+    navigate("/");
+  }
+
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh" }}>
-
       {/* ================= TOP NAV BAR ================= */}
-<div
-  style={{
-    position: "sticky",
-    top: 0,
-    background: "#ffffff",
-    borderBottom: "1px solid #ddd",
-    padding: "10px 20px",
-    display: "flex",
-    justifyContent: "space-around",
-    zIndex: 100
-  }}
->
-  <span style={navItem} onClick={() => navigate(`/profile/${username}`)}>
-    👤 Profile
-  </span>
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          background: "#ffffff",
+          borderBottom: "1px solid #ddd",
+          padding: "10px 20px",
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          zIndex: 100
+        }}
+      >
+        <span style={navItem} onClick={() => navigate(`/profile/${username}`)}>
+          👤 Profile
+        </span>
 
-  <span style={navItem} onClick={() => navigate("/search")}>
-    🔍 Search
-  </span>
+        <span style={navItem} onClick={() => navigate("/search")}>
+          🔍 Search
+        </span>
 
-  <span style={navItem} onClick={() => navigate("/friends")}>
-    👥 Community
-  </span>
+        <span style={navItem} onClick={() => navigate("/friends")}>
+          👥 Community
+        </span>
 
-  <span style={navItem} onClick={() => navigate("/chat")}>
-    💬 Messages
-  </span>
+        <span style={navItem} onClick={() => navigate("/chat")}>
+          💬 Messages
+        </span>
 
-  <span style={navItem} onClick={() => navigate("/notifications")}>
-    🔔 Notifications
-  </span>
-</div>
+        <span style={navItem} onClick={() => navigate("/notifications")}>
+          🔔 Notifications
+        </span>
 
+        <span
+          style={{ ...navItem, color: "red" }}
+          onClick={handleLogout}
+        >
+          🚪 Logout
+        </span>
+      </div>
 
       {/* ================= MAIN CONTENT ================= */}
       <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-
         {/* ================= CREATE POST ================= */}
         <div
           style={{
@@ -140,11 +153,7 @@ export default function Home() {
           <button
             onClick={handlePost}
             disabled={loading}
-            style={{
-              marginTop: 8,
-              padding: "6px 14px",
-              cursor: "pointer"
-            }}
+            style={{ marginTop: 8, padding: "6px 14px", cursor: "pointer" }}
           >
             {loading ? "Posting..." : "Post"}
           </button>
@@ -164,31 +173,21 @@ export default function Home() {
               border: "1px solid #ddd"
             }}
           >
-            {/* USER INFO */}
             <div style={{ fontWeight: "bold" }}>@{post.author}</div>
             <div style={{ fontSize: 12, color: "#555" }}>
               {dept} · {college}
             </div>
 
-            {/* CONTENT */}
-            {post.content && (
-              <p style={{ marginTop: 8 }}>{post.content}</p>
-            )}
+            {post.content && <p style={{ marginTop: 8 }}>{post.content}</p>}
 
-            {/* IMAGE */}
             {post.image && (
               <img
                 src={post.image}
                 alt="post"
-                style={{
-                  width: "100%",
-                  borderRadius: 8,
-                  marginTop: 8
-                }}
+                style={{ width: "100%", borderRadius: 8, marginTop: 8 }}
               />
             )}
 
-            {/* ACTIONS */}
             <div
               style={{
                 display: "flex",
@@ -217,7 +216,6 @@ export default function Home() {
               </span>
             </div>
 
-            {/* ================= COMMENTS ================= */}
             {openComments === post._id && (
               <div style={{ marginTop: 12 }}>
                 <Comments postId={post._id} />
@@ -234,9 +232,6 @@ export default function Home() {
   );
 }
 
-/* =========================
-   NAV STYLE
-========================= */
 const navItem = {
   cursor: "pointer",
   fontWeight: "bold"
