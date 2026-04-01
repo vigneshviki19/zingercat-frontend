@@ -276,6 +276,9 @@ export default function Landing() {
               <div className="zc-paw" />
               <div className="zc-paw" />
               <div className="zc-paw" />
+            </div>
+            <p className="zc-anim-label">Animation goes here</p>
+          </div>
 
           <div className="zc-btn-group">
             <button
