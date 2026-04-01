@@ -1,11 +1,25 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getProfile } from "../api";
 
 export default function PostCard({ post, liked, likeCount, onLike, onCommentClick }) {
   const navigate = useNavigate();
-  const dept     = localStorage.getItem("dept")    || "CSE";
   const college  = localStorage.getItem("college") || "PSG Tech";
   const [heartAnim, setHeartAnim] = useState(false);
+  const [authorDept, setAuthorDept] = useState("");
+
+  // Fetch the post author's actual dept from their profile
+  useEffect(() => {
+    async function fetchAuthorDept() {
+      try {
+        const data = await getProfile(post.author);
+        setAuthorDept(data.dept || "");
+      } catch {
+        setAuthorDept("");
+      }
+    }
+    fetchAuthorDept();
+  }, [post.author]);
 
   // Trigger heart burst only when transitioning to liked
   useEffect(() => {
@@ -42,6 +56,7 @@ export default function PostCard({ post, liked, likeCount, onLike, onCommentClic
         .pc-btn.liked { color:#E86A2A; background:#FFF0DE; border-color:#F4854A; }
         .pc-author { font-weight:500; font-size:14px; color:#2C1A0E; cursor:pointer; transition:color 0.15s; }
         .pc-author:hover { color:#F4854A; }
+        .pc-dept-pill { display:inline-flex; align-items:center; gap:4px; background:#FFF0DE; border:1px solid #FFD6A5; border-radius:100px; padding:2px 8px; font-size:11px; color:#9B5B1A; font-weight:500; }
       `}</style>
 
       {/* Header */}
@@ -51,7 +66,12 @@ export default function PostCard({ post, liked, likeCount, onLike, onCommentClic
         </div>
         <div>
           <div className="pc-author" onClick={() => navigate(`/profile/${post.author}`)}>@{post.author}</div>
-          <div style={{ fontSize:11, color:"#C4A08A", marginTop:1 }}>{dept} · {college}</div>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:3 }}>
+            {authorDept
+              ? <span className="pc-dept-pill">🏫 {authorDept}</span>
+              : <span style={{ fontSize:11, color:"#C4A08A" }}>{college}</span>
+            }
+          </div>
         </div>
       </div>
 
@@ -64,7 +84,7 @@ export default function PostCard({ post, liked, likeCount, onLike, onCommentClic
       {/* Actions */}
       <div style={{ display:"flex", gap:6, paddingTop:10, borderTop:"1px solid rgba(255,214,165,0.4)" }}>
 
-        {/* Like button — all state owned by Home */}
+        {/* Like button */}
         <div style={{ position:"relative", display:"inline-flex" }}>
           <button className={`pc-btn${liked ? " liked" : ""}`} onClick={() => onLike(post._id)}>
             {liked ? "❤️" : "🤍"} {likeCount}
