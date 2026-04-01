@@ -352,13 +352,35 @@ export default function EditProfile() {
           {/* dept */}
           <div className="zep-field">
             <label className="zep-label">🏫 Department</label>
-            <input
+            <select
               name="dept"
               value={form.dept}
               onChange={handleChange}
-              placeholder="CSE / ECE / IT"
-              className="zep-input"
-            />
+              className="zep-select"
+              style={{ width: "100%" }}
+            >
+              <option value="">Select your department</option>
+              <option value="CSE">CSE – Computer Science & Engineering</option>
+              <option value="IT">IT – Information Technology</option>
+              <option value="ECE">ECE – Electronics & Communication</option>
+              <option value="EEE">EEE – Electrical & Electronics</option>
+              <option value="MECH">MECH – Mechanical Engineering</option>
+              <option value="CIVIL">CIVIL – Civil Engineering</option>
+              <option value="CHEM">CHEM – Chemical Engineering</option>
+              <option value="PROD">PROD – Production Engineering</option>
+              <option value="ICE">ICE – Instrumentation & Control</option>
+              <option value="TEXTILE">TEXTILE – Textile Technology</option>
+              <option value="FT">FT – Fashion Technology</option>
+              <option value="BME">BME – Biomedical Engineering</option>
+              <option value="BT">BT – Biotechnology</option>
+              <option value="MBA">MBA – Master of Business Administration</option>
+              <option value="MCA">MCA – Master of Computer Applications</option>
+              <option value="MSC_CS">M.Sc – Computer Science</option>
+              <option value="MSC_MATHS">M.Sc – Mathematics</option>
+              <option value="MSC_PHYSICS">M.Sc – Physics</option>
+              <option value="MSC_CHEM">M.Sc – Chemistry</option>
+              <option value="OTHER">Other</option>
+            </select>
           </div>
 
           {/* year */}
