@@ -9,6 +9,8 @@ export default function Home() {
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openComments, setOpenComments] = useState(null);
+  const [likedPosts, setLikedPosts] = useState({});
+  const [heartAnim, setHeartAnim] = useState({});
 
   const navigate = useNavigate();
 
@@ -56,14 +58,35 @@ export default function Home() {
   }
 
   /* =========================
-     LIKE POST
+     LIKE POST — optimistic + Instagram heart burst
   ========================= */
   async function handleLike(postId) {
+    // 1. Optimistically toggle liked state & count instantly
+    setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
+    setPosts(prev => prev.map(p => {
+      if (p._id !== postId) return p;
+      const alreadyLiked = likedPosts[postId];
+      const likes = Array.isArray(p.likes) ? p.likes : [];
+      return {
+        ...p,
+        likes: alreadyLiked
+          ? likes.filter(u => u !== "me")
+          : [...likes, "me"]
+      };
+    }));
+
+    // 2. Trigger heart burst animation
+    setHeartAnim(prev => ({ ...prev, [postId]: true }));
+    setTimeout(() => setHeartAnim(prev => ({ ...prev, [postId]: false })), 900);
+
+    // 3. Fire API in background — silently sync after
     try {
       await likePost(postId);
       loadPosts();
     } catch (err) {
       console.error("LIKE ERROR:", err);
+      // Revert on failure
+      setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
     }
   }
 
@@ -359,6 +382,31 @@ export default function Home() {
           text-align: right;
         }
 
+
+        /* ---- HEART BURST ---- */
+        .zh-like-wrap {
+          position: relative;
+          display: inline-flex;
+        }
+        .zh-heart-burst {
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 42px;
+          pointer-events: none;
+          opacity: 0;
+          z-index: 10;
+        }
+        .zh-heart-burst.active {
+          animation: heartPop 0.75s cubic-bezier(.36,.07,.19,.97) forwards;
+        }
+        @keyframes heartPop {
+          0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.3); }
+          30%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.4); }
+          60%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
+          100% { opacity: 0;   transform: translate(-50%, -50%) scale(0.8); }
+        }
+        .zh-action-btn-like.liked { color: #E86A2A; background: #FFF0DE; border-color: #F4854A; }
         /* ---- COMMENTS WRAPPER ---- */
         .zh-comments-wrap {
           margin-top: 14px;
@@ -468,9 +516,15 @@ export default function Home() {
               )}
 
               <div className="zh-post-actions">
-                <button className="zh-action-btn zh-action-btn-like" onClick={() => handleLike(post._id)}>
-                  ❤️ {Array.isArray(post.likes) ? post.likes.length : 0}
-                </button>
+                <div className="zh-like-wrap">
+                  <button
+                    className={`zh-action-btn zh-action-btn-like${likedPosts[post._id] ? " liked" : ""}`}
+                    onClick={() => handleLike(post._id)}
+                  >
+                    {likedPosts[post._id] ? "❤️" : "🤍"} {Array.isArray(post.likes) ? post.likes.length : 0}
+                  </button>
+                  <span className={`zh-heart-burst${heartAnim[post._id] ? " active" : ""}`}>❤️</span>
+                </div>
 
                 <button
                   className="zh-action-btn"
