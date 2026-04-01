@@ -18,9 +18,6 @@ export default function Home() {
   const dept = localStorage.getItem("dept") || "CSE";
   const college = localStorage.getItem("college") || "PSG Tech";
 
-  /* =========================
-     LOAD POSTS
-  ========================= */
   useEffect(() => {
     loadPosts();
   }, []);
@@ -31,7 +28,7 @@ export default function Home() {
       const postList = Array.isArray(data) ? data : [];
       setPosts(postList);
 
-      // Sync liked state from server — checks if current username is in each post's likes array
+      // Sync liked state from server
       const liked = {};
       postList.forEach(p => {
         if (Array.isArray(p.likes) && p.likes.includes(username)) {
@@ -44,16 +41,11 @@ export default function Home() {
     }
   }
 
-  /* =========================
-     CREATE POST
-  ========================= */
   async function handlePost() {
     if (!content.trim() && !image) return;
-
     const formData = new FormData();
     formData.append("content", content);
     if (image) formData.append("image", image);
-
     try {
       setLoading(true);
       await createPost(formData);
@@ -67,42 +59,48 @@ export default function Home() {
     }
   }
 
-  /* =========================
-     LIKE POST — optimistic + Instagram heart burst
-  ========================= */
   async function handleLike(postId) {
-    // 1. Optimistically toggle liked state & count instantly
-    setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
+    // Read current state BEFORE any updates
+    const alreadyLiked = likedPosts[postId] || false;
+
+    // FIX 1 & 3: Optimistic toggle using functional updaters (no stale closure)
+    setLikedPosts(prev => ({ ...prev, [postId]: !alreadyLiked }));
     setPosts(prev => prev.map(p => {
       if (p._id !== postId) return p;
-      const alreadyLiked = likedPosts[postId];
       const likes = Array.isArray(p.likes) ? p.likes : [];
       return {
         ...p,
+        // FIX 2: use real username, not hardcoded "me"
         likes: alreadyLiked
-          ? likes.filter(u => u !== "me")
-          : [...likes, "me"]
+          ? likes.filter(u => u !== username)
+          : [...likes, username]
       };
     }));
 
-    // 2. Trigger heart burst animation
+    // Heart burst animation
     setHeartAnim(prev => ({ ...prev, [postId]: true }));
     setTimeout(() => setHeartAnim(prev => ({ ...prev, [postId]: false })), 900);
 
-    // 3. Fire API in background — silently sync after
+    // FIX 1: Fire API but DO NOT call loadPosts() after — that caused the -2
     try {
       await likePost(postId);
-      loadPosts();
     } catch (err) {
       console.error("LIKE ERROR:", err);
-      // Revert on failure
-      setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
+      // Revert optimistic update on failure
+      setLikedPosts(prev => ({ ...prev, [postId]: alreadyLiked }));
+      setPosts(prev => prev.map(p => {
+        if (p._id !== postId) return p;
+        const likes = Array.isArray(p.likes) ? p.likes : [];
+        return {
+          ...p,
+          likes: alreadyLiked
+            ? [...likes, username]
+            : likes.filter(u => u !== username)
+        };
+      }));
     }
   }
 
-  /* =========================
-     LOGOUT
-  ========================= */
   function handleLogout() {
     localStorage.clear();
     navigate("/");
@@ -133,7 +131,6 @@ export default function Home() {
         .zh-blob-2 { width: 350px; height: 350px; background: #FFAAA5; bottom: -80px; right: -80px; }
         .zh-blob-3 { width: 220px; height: 220px; background: #A8DADC; top: 35%; left: 55%; opacity: 0.18; }
 
-        /* ---- TOP NAV ---- */
         .zh-nav {
           position: sticky;
           top: 0;
@@ -179,7 +176,6 @@ export default function Home() {
         }
         .zh-nav-item-logout:hover { background: #FFF0EE; }
 
-        /* ---- MAIN LAYOUT ---- */
         .zh-main {
           position: relative;
           z-index: 1;
@@ -188,7 +184,6 @@ export default function Home() {
           padding: 0 16px 60px;
         }
 
-        /* ---- CREATE POST BOX ---- */
         .zh-create {
           background: rgba(255,255,255,0.78);
           backdrop-filter: blur(14px);
@@ -286,7 +281,6 @@ export default function Home() {
         }
         .zh-post-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* ---- FEED LABEL ---- */
         .zh-feed-label {
           display: flex; align-items: center; gap: 10px;
           margin-bottom: 16px;
@@ -297,7 +291,6 @@ export default function Home() {
           text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;
         }
 
-        /* ---- EMPTY STATE ---- */
         .zh-empty {
           text-align: center;
           padding: 48px 20px;
@@ -306,7 +299,6 @@ export default function Home() {
         .zh-empty-icon { font-size: 40px; margin-bottom: 12px; }
         .zh-empty-text { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 15px; }
 
-        /* ---- POST CARD ---- */
         .zh-post {
           background: rgba(255,255,255,0.78);
           backdrop-filter: blur(14px);
@@ -385,6 +377,8 @@ export default function Home() {
           transform: translateY(-1px);
         }
         .zh-action-btn-like:hover { color: #E86A2A; }
+        .zh-action-btn-like.liked { color: #E86A2A; background: #FFF0DE; border-color: #F4854A; }
+
         .zh-post-time {
           font-size: 11px;
           color: #C4A08A;
@@ -392,8 +386,6 @@ export default function Home() {
           text-align: right;
         }
 
-
-        /* ---- HEART BURST ---- */
         .zh-like-wrap {
           position: relative;
           display: inline-flex;
@@ -416,8 +408,7 @@ export default function Home() {
           60%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
           100% { opacity: 0;   transform: translate(-50%, -50%) scale(0.8); }
         }
-        .zh-action-btn-like.liked { color: #E86A2A; background: #FFF0DE; border-color: #F4854A; }
-        /* ---- COMMENTS WRAPPER ---- */
+
         .zh-comments-wrap {
           margin-top: 14px;
           padding-top: 14px;
@@ -430,7 +421,6 @@ export default function Home() {
         <div className="zh-blob zh-blob-2" />
         <div className="zh-blob zh-blob-3" />
 
-        {/* ================= TOP NAV ================= */}
         <nav className="zh-nav">
           <div className="zh-nav-brand">🐱 Zinger Cat</div>
           <div className="zh-nav-links">
@@ -443,28 +433,22 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* ================= MAIN ================= */}
         <div className="zh-main">
 
-          {/* ---- CREATE POST ---- */}
           <div className="zh-create">
             <div className="zh-create-header">
               <div className="zh-create-avatar">🐱</div>
               <div className="zh-create-name">@{username} · {dept}</div>
             </div>
-
             <textarea
               className="zh-textarea"
               placeholder="Speak your mind, meow... 🐾"
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
-
             <div className="zh-create-footer">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label className="zh-file-label" htmlFor="zh-img-input">
-                  📷 Photo
-                </label>
+                <label className="zh-file-label" htmlFor="zh-img-input">📷 Photo</label>
                 <input
                   id="zh-img-input"
                   className="zh-file-input"
@@ -480,14 +464,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ---- FEED LABEL ---- */}
           <div className="zh-feed-label">
             <div className="zh-feed-label-line" />
             <span className="zh-feed-label-text">Latest posts</span>
             <div className="zh-feed-label-line" />
           </div>
 
-          {/* ---- EMPTY STATE ---- */}
           {posts.length === 0 && (
             <div className="zh-empty">
               <div className="zh-empty-icon">🐾</div>
@@ -495,35 +477,22 @@ export default function Home() {
             </div>
           )}
 
-          {/* ---- FEED ---- */}
           {posts.map((post) => (
             <div key={post._id} className="zh-post">
-
               <div className="zh-post-header">
-                <div
-                  className="zh-post-avatar"
-                  onClick={() => navigate(`/profile/${post.author}`)}
-                >
+                <div className="zh-post-avatar" onClick={() => navigate(`/profile/${post.author}`)}>
                   🐱
                 </div>
                 <div>
-                  <div
-                    className="zh-post-author"
-                    onClick={() => navigate(`/profile/${post.author}`)}
-                  >
+                  <div className="zh-post-author" onClick={() => navigate(`/profile/${post.author}`)}>
                     @{post.author}
                   </div>
                   <div className="zh-post-meta">{dept} · {college}</div>
                 </div>
               </div>
 
-              {post.content && (
-                <p className="zh-post-content">{post.content}</p>
-              )}
-
-              {post.image && (
-                <img src={post.image} alt="post" className="zh-post-image" />
-              )}
+              {post.content && <p className="zh-post-content">{post.content}</p>}
+              {post.image && <img src={post.image} alt="post" className="zh-post-image" />}
 
               <div className="zh-post-actions">
                 <div className="zh-like-wrap">
@@ -557,7 +526,6 @@ export default function Home() {
               <div className="zh-post-time">
                 {new Date(post.createdAt).toLocaleString()}
               </div>
-
             </div>
           ))}
         </div>
