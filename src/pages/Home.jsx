@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPosts, createPost, likePost } from "../api";
 import { useNavigate } from "react-router-dom";
+import PostCard from "../components/PostCard";
 import Comments from "../components/Comments";
 
 function getLikedFromStorage() {
@@ -18,8 +19,9 @@ export default function Home() {
   const [image, setImage]               = useState(null);
   const [loading, setLoading]           = useState(false);
   const [openComments, setOpenComments] = useState(null);
-  const [likedPosts, setLikedPosts]     = useState(getLikedFromStorage); // init from localStorage
-  const [heartAnim, setHeartAnim]       = useState({});
+
+  // Single source of truth for liked state — backed by localStorage
+  const [likedPosts, setLikedPosts] = useState(getLikedFromStorage);
 
   const navigate = useNavigate();
   const username = localStorage.getItem("username");
@@ -34,7 +36,7 @@ export default function Home() {
       const postList = Array.isArray(data) ? data : [];
       setPosts(postList);
 
-      // Merge: server is truth for liked=true, localStorage keeps it across refreshes
+      // Merge server truth into localStorage
       const stored = getLikedFromStorage();
       const merged = { ...stored };
       postList.forEach(p => {
@@ -67,32 +69,29 @@ export default function Home() {
   async function handleLike(postId) {
     const alreadyLiked = likedPosts[postId] || false;
 
-    // 1. Optimistic update
-    const newLiked = { ...likedPosts, [postId]: !alreadyLiked };
-    setLikedPosts(newLiked);
-    saveLikedToStorage(newLiked); // persist immediately so refresh remembers it
+    // 1. Optimistic update for liked state
+    const newLikedMap = { ...likedPosts, [postId]: !alreadyLiked };
+    setLikedPosts(newLikedMap);
+    saveLikedToStorage(newLikedMap);
 
+    // 2. Optimistic update for post likes array (drives the count display)
     setPosts(prev => prev.map(p => {
       if (p._id !== postId) return p;
       const likes = Array.isArray(p.likes) ? p.likes : [];
       return {
         ...p,
         likes: alreadyLiked
-          ? likes.filter(u => u !== username)
-          : [...new Set([...likes, username])]
+          ? likes.filter(u => u !== username)          // unlike → remove username → count -1
+          : [...new Set([...likes, username])]          // like   → add username    → count +1
       };
     }));
 
-    // 2. Heart burst
-    setHeartAnim(prev => ({ ...prev, [postId]: true }));
-    setTimeout(() => setHeartAnim(prev => ({ ...prev, [postId]: false })), 900);
-
-    // 3. API — NO loadPosts() here (causes the -2 bug)
+    // 3. API call — NO loadPosts() after (that resets optimistic state and causes -2)
     try {
       await likePost(postId);
     } catch (err) {
       console.error("LIKE ERROR:", err);
-      // Revert on failure
+      // Revert both liked map and posts array
       const reverted = { ...likedPosts, [postId]: alreadyLiked };
       setLikedPosts(reverted);
       saveLikedToStorage(reverted);
@@ -153,30 +152,6 @@ export default function Home() {
         .zh-empty { text-align: center; padding: 48px 20px; color: #C4A08A; }
         .zh-empty-icon { font-size: 40px; margin-bottom: 12px; }
         .zh-empty-text { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 15px; }
-        .zh-post { background: rgba(255,255,255,0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,200,140,0.35); border-radius: 20px; padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 2px 16px rgba(200,120,60,0.06); animation: fadeUp 0.4s cubic-bezier(.22,1,.36,1) both; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .zh-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .zh-post-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #FFD6A5, #FFA86C); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; border: 2px solid rgba(244,133,74,0.25); cursor: pointer; }
-        .zh-post-author { font-weight: 500; font-size: 14px; color: #2C1A0E; cursor: pointer; }
-        .zh-post-author:hover { color: #F4854A; }
-        .zh-post-meta { font-size: 11px; color: #C4A08A; margin-top: 1px; }
-        .zh-post-content { font-size: 14px; color: #3D2010; line-height: 1.65; margin-bottom: 10px; }
-        .zh-post-image { width: 100%; border-radius: 12px; margin-bottom: 10px; max-height: 380px; object-fit: cover; }
-        .zh-post-actions { display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid rgba(255,214,165,0.4); }
-        .zh-action-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 9px; font-size: 13px; font-weight: 500; cursor: pointer; background: #FFF8F2; border: 1px solid rgba(255,214,165,0.5); color: #9B5B1A; transition: background 0.15s, border-color 0.15s, transform 0.1s; }
-        .zh-action-btn:hover { background: #FFF0DE; border-color: #F4854A; transform: translateY(-1px); }
-        .zh-action-btn-like:hover { color: #E86A2A; }
-        .zh-action-btn-like.liked { color: #E86A2A; background: #FFF0DE; border-color: #F4854A; }
-        .zh-post-time { font-size: 11px; color: #C4A08A; margin-top: 10px; text-align: right; }
-        .zh-like-wrap { position: relative; display: inline-flex; }
-        .zh-heart-burst { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 42px; pointer-events: none; opacity: 0; z-index: 10; }
-        .zh-heart-burst.active { animation: heartPop 0.75s cubic-bezier(.36,.07,.19,.97) forwards; }
-        @keyframes heartPop {
-          0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.3); }
-          30%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.4); }
-          60%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
-          100% { opacity: 0;   transform: translate(-50%, -50%) scale(0.8); }
-        }
         .zh-comments-wrap { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,214,165,0.4); }
       `}</style>
 
@@ -206,7 +181,7 @@ export default function Home() {
             <textarea className="zh-textarea" placeholder="Speak your mind, meow... 🐾"
               value={content} onChange={(e) => setContent(e.target.value)} />
             <div className="zh-create-footer">
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <label className="zh-file-label" htmlFor="zh-img-input">📷 Photo</label>
                 <input id="zh-img-input" className="zh-file-input" type="file" accept="image/*"
                   onChange={(e) => setImage(e.target.files[0])} />
@@ -232,42 +207,19 @@ export default function Home() {
           )}
 
           {posts.map((post) => (
-            <div key={post._id} className="zh-post">
-              <div className="zh-post-header">
-                <div className="zh-post-avatar" onClick={() => navigate(`/profile/${post.author}`)}>🐱</div>
-                <div>
-                  <div className="zh-post-author" onClick={() => navigate(`/profile/${post.author}`)}>
-                    @{post.author}
-                  </div>
-                  <div className="zh-post-meta">{dept} · {college}</div>
-                </div>
-              </div>
-              {post.content && <p className="zh-post-content">{post.content}</p>}
-              {post.image && <img src={post.image} alt="post" className="zh-post-image" />}
-              <div className="zh-post-actions">
-                <div className="zh-like-wrap">
-                  <button
-                    className={`zh-action-btn zh-action-btn-like${likedPosts[post._id] ? " liked" : ""}`}
-                    onClick={() => handleLike(post._id)}
-                  >
-                    {likedPosts[post._id] ? "❤️" : "🤍"} {Array.isArray(post.likes) ? post.likes.length : 0}
-                  </button>
-                  <span className={`zh-heart-burst${heartAnim[post._id] ? " active" : ""}`}>❤️</span>
-                </div>
-                <button className="zh-action-btn"
-                  onClick={() => setOpenComments(openComments === post._id ? null : post._id)}>
-                  💬 Comment
-                </button>
-                <button className="zh-action-btn" onClick={() => navigate(`/chat/${post.author}`)}>
-                  🔗 Share
-                </button>
-              </div>
+            <div key={post._id}>
+              <PostCard
+                post={post}
+                liked={likedPosts[post._id] || false}
+                likeCount={Array.isArray(post.likes) ? post.likes.length : 0}
+                onLike={handleLike}
+                onCommentClick={(id) => setOpenComments(openComments === id ? null : id)}
+              />
               {openComments === post._id && (
-                <div className="zh-comments-wrap">
+                <div className="zh-comments-wrap" style={{ marginTop: -10, marginBottom: 16, background: "rgba(255,255,255,0.78)", border: "1px solid rgba(255,200,140,0.35)", borderRadius: "0 0 20px 20px", padding: "14px 20px" }}>
                   <Comments postId={post._id} />
                 </div>
               )}
-              <div className="zh-post-time">{new Date(post.createdAt).toLocaleString()}</div>
             </div>
           ))}
         </div>
