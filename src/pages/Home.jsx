@@ -28,7 +28,17 @@ export default function Home() {
   async function loadPosts() {
     try {
       const data = await getPosts();
-      setPosts(Array.isArray(data) ? data : []);
+      const postList = Array.isArray(data) ? data : [];
+      setPosts(postList);
+
+      // Sync liked state from server — checks if current username is in each post's likes array
+      const liked = {};
+      postList.forEach(p => {
+        if (Array.isArray(p.likes) && p.likes.includes(username)) {
+          liked[p._id] = true;
+        }
+      });
+      setLikedPosts(liked);
     } catch (err) {
       console.error("LOAD POSTS ERROR:", err);
     }
