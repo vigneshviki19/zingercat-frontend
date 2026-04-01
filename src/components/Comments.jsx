@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ added
+import { useNavigate } from "react-router-dom";
 import { getComments, addComment } from "../api";
 
 export default function Comments({ postId }) {
@@ -7,8 +7,9 @@ export default function Comments({ postId }) {
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [replyAuthor, setReplyAuthor] = useState("");
-
-  const navigate = useNavigate(); // ✅ added
+  const [focused, setFocused] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadComments();
@@ -20,15 +21,14 @@ export default function Comments({ postId }) {
   }
 
   async function handleSubmit() {
-    if (!text.trim()) return;
-    await addComment({
-      postId,
-      text,
-      parentId: replyTo
-    });
+    if (!text.trim() || submitting) return;
+    setSubmitting(true);
+    await addComment({ postId, text, parentId: replyTo });
     setText("");
     setReplyTo(null);
     setReplyAuthor("");
+    setFocused(false);
+    setSubmitting(false);
     loadComments();
   }
 
@@ -37,239 +37,241 @@ export default function Comments({ postId }) {
     setReplyAuthor("");
   }
 
-  // Recursive render (Reddit-style) — logic untouched
-  function renderComments(parentId = null, level = 0) {
-    return comments
-      .filter(c => c.parentId === parentId)
-      .map(c => (
-        <div key={c._id} className={`zc-comment ${level > 0 ? "zc-comment-nested" : ""}`}
-          style={{ marginLeft: level * 18 }}>
-
-          {level > 0 && <div className="zc-comment-thread-line" />}
-
-          <div className="zc-comment-inner">
-            <div className="zc-comment-avatar">{c.author?.[0]?.toUpperCase() || "🐱"}</div>
-            <div className="zc-comment-body">
-              <div className="zc-comment-header">
-                <span
-                  className="zc-comment-author"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate(`/profile/${c.author}`)} // ✅ added
-                >
-                  @{c.author}
-                </span>
-                {c.createdAt && (
-                  <span className="zc-comment-time">
-                    {new Date(c.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                )}
-              </div>
-              <p className="zc-comment-text">{c.text}</p>
-              <span
-                className="zc-comment-reply-btn"
-                onClick={() => { setReplyTo(c._id); setReplyAuthor(c.author); }}
-              >
-                ↩ Reply
-              </span>
-            </div>
-          </div>
-
-          {renderComments(c._id, level + 1)}
-        </div>
-      ));
+  function getInitial(name) {
+    return name ? name[0].toUpperCase() : "?";
   }
 
-  return (
-    <>
-      <style>{`
-        .zc-comments-root {
-          margin-top: 4px;
-          font-family: 'DM Sans', sans-serif;
-        }
+  function timeAgo(dateStr) {
+    if (!dateStr) return "";
+    const diff = (Date.now() - new Date(dateStr)) / 1000;
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    return `${Math.floor(diff / 86400)}d`;
+  }
 
-        .zc-comment-input-wrap {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-bottom: 16px;
-        }
+  // avatar color based on username
+  const avatarColors = [
+    { bg: "#EEF2FF", color: "#4338CA" },
+    { bg: "#FDF2F8", color: "#9D174D" },
+    { bg: "#ECFDF5", color: "#065F46" },
+    { bg: "#FFF7ED", color: "#92400E" },
+    { bg: "#EFF6FF", color: "#1E40AF" },
+  ];
+  function getAvatarColor(name) {
+    if (!name) return avatarColors[0];
+    return avatarColors[name.charCodeAt(0) % avatarColors.length];
+  }
 
-        .zc-reply-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #FFF0DE;
-          border: 1px solid #FFD6A5;
-          border-radius: 100px;
-          padding: 4px 10px 4px 8px;
-          font-size: 12px;
-          color: #9B5B1A;
-          font-weight: 500;
-          width: fit-content;
-          animation: chipIn 0.2s ease;
-        }
-        @keyframes chipIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .zc-reply-chip-cancel {
-          cursor: pointer;
-          font-size: 14px;
-          color: #C4A08A;
-          line-height: 1;
-          margin-left: 2px;
-        }
-        .zc-reply-chip-cancel:hover { color: #E86A2A; }
+  function renderComments(parentId = null, level = 0) {
+    return comments
+      .filter((c) => c.parentId === parentId)
+      .map((c) => {
+        const { bg, color } = getAvatarColor(c.author);
+        return (
+          <div key={c._id} style={{ marginLeft: level > 0 ? 28 : 0, position: "relative" }}>
+            {level > 0 && (
+              <div style={{
+                position: "absolute",
+                left: -16,
+                top: 0,
+                bottom: 12,
+                width: 1.5,
+                background: "linear-gradient(to bottom, #E5E7EB 80%, transparent)"
+              }} />
+            )}
 
-        .zc-comment-row {
-          display: flex;
-          align-items: flex-end;
-          gap: 8px;
-        }
-        .zc-comment-self-avatar {
-          width: 32px; height: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #FFD6A5, #FFA86C);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 15px;
-          flex-shrink: 0;
-          margin-bottom: 2px;
-        }
-        .zc-comment-textarea {
-          flex: 1;
-          background: #FFFAF4;
-          border: 1.5px solid #FFD6A5;
-          border-radius: 14px;
-          padding: 10px 14px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px;
-          color: #2C1A0E;
-          resize: none;
-          height: 44px;
-          outline: none;
-          transition: border-color 0.18s, box-shadow 0.18s, height 0.2s;
-          line-height: 1.5;
-        }
-        .zc-comment-textarea::placeholder { color: #C4A08A; }
-        .zc-comment-textarea:focus {
-          border-color: #F4854A;
-          background: #fff;
-          box-shadow: 0 0 0 3px rgba(244,133,74,0.10);
-          height: 72px;
-        }
-        .zc-comment-submit {
-          width: 36px; height: 36px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #F4854A, #E86A2A);
-          border: none;
-          color: #fff;
-          font-size: 16px;
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-          box-shadow: 0 3px 10px rgba(244,133,74,0.3);
-          transition: transform 0.15s, box-shadow 0.15s;
-          margin-bottom: 2px;
-        }
-        .zc-comment-submit:hover {
-          transform: scale(1.08);
-          box-shadow: 0 5px 14px rgba(244,133,74,0.4);
-        }
+            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              {/* Avatar */}
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  background: bg,
+                  color,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 600,
+                  fontSize: 12,
+                  flexShrink: 0,
+                  cursor: "pointer",
+                  border: `1.5px solid ${color}22`
+                }}
+                onClick={() => navigate(`/profile/${c.author}`)}
+              >
+                {getInitial(c.author)}
+              </div>
 
-        .zc-comments-list {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
+              {/* Bubble */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  background: "#F9FAFB",
+                  border: "1px solid #F3F4F6",
+                  borderRadius: "0 12px 12px 12px",
+                  padding: "8px 12px",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                    <span
+                      style={{ fontSize: 13, fontWeight: 600, color: "#111827", cursor: "pointer" }}
+                      onClick={() => navigate(`/profile/${c.author}`)}
+                    >
+                      @{c.author}
+                    </span>
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>{timeAgo(c.createdAt)}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13.5, color: "#374151", lineHeight: 1.5 }}>
+                    {c.text}
+                  </p>
+                </div>
 
-        .zc-comment {
-          position: relative;
-          animation: commentIn 0.3s cubic-bezier(.22,1,.36,1) both;
-        }
-        @keyframes commentIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .zc-comment-thread-line {
-          position: absolute;
-          left: -12px; top: 0; bottom: 0;
-          width: 2px;
-          background: linear-gradient(to bottom, #FFD6A5, transparent);
-        }
-
-        .zc-comment-inner {
-          display: flex;
-          gap: 8px;
-          align-items: flex-start;
-        }
-
-        .zc-comment-avatar {
-          width: 30px; height: 30px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #FFD6A5, #FFA86C);
-          display: flex; align-items: center; justify-content: center;
-        }
-
-        .zc-comment-body {
-          flex: 1;
-          background: #FFFAF4;
-          border-radius: 0 14px 14px 14px;
-          padding: 8px 12px;
-        }
-
-        .zc-comment-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .zc-comment-author {
-          font-size: 12px;
-          font-weight: 500;
-          color: #9B5B1A;
-        }
-
-        .zc-comment-text {
-          font-size: 13px;
-        }
-
-        .zc-comment-reply-btn {
-          cursor: pointer;
-        }
-      `}</style>
-
-      <div className="zc-comments-root">
-        <div className="zc-comment-input-wrap">
-          {replyTo && (
-            <div className="zc-reply-chip">
-              ↩ Replying to @{replyAuthor}
-              <span className="zc-reply-chip-cancel" onClick={cancelReply}>✕</span>
+                <button
+                  onClick={() => { setReplyTo(c._id); setReplyAuthor(c.author); }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: "3px 4px",
+                    marginTop: 2,
+                    fontSize: 12,
+                    color: "#6B7280",
+                    cursor: "pointer",
+                    fontWeight: 500,
+                    letterSpacing: "0.01em"
+                  }}
+                >
+                  Reply
+                </button>
+              </div>
             </div>
-          )}
 
-          <div className="zc-comment-row">
-            <div className="zc-comment-self-avatar">🐱</div>
-            <textarea
-              className="zc-comment-textarea"
-              placeholder={replyTo ? `Reply to @${replyAuthor}...` : "Add a comment..."}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-            />
-            <button className="zc-comment-submit" onClick={handleSubmit}>↑</button>
+            {renderComments(c._id, level + 1)}
           </div>
+        );
+      });
+  }
+
+  const me = localStorage.getItem("username") || "me";
+  const { bg: myBg, color: myColor } = getAvatarColor(me);
+
+  return (
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", padding: "4px 0" }}>
+
+      {/* Reply chip */}
+      {replyTo && (
+        <div style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          background: "#EFF6FF",
+          border: "1px solid #BFDBFE",
+          borderRadius: 100,
+          padding: "4px 10px",
+          fontSize: 12,
+          color: "#1D4ED8",
+          fontWeight: 500,
+          marginBottom: 8,
+        }}>
+          ↩ Replying to @{replyAuthor}
+          <span
+            onClick={cancelReply}
+            style={{ cursor: "pointer", color: "#93C5FD", fontSize: 14, lineHeight: 1, marginLeft: 2 }}
+          >✕</span>
+        </div>
+      )}
+
+      {/* Input */}
+      <div style={{
+        display: "flex",
+        gap: 10,
+        alignItems: "flex-end",
+        marginBottom: 20,
+        background: "#fff",
+        border: focused ? "1.5px solid #6366F1" : "1.5px solid #E5E7EB",
+        borderRadius: 14,
+        padding: "8px 8px 8px 12px",
+        transition: "border-color 0.15s",
+        boxShadow: focused ? "0 0 0 3px rgba(99,102,241,0.08)" : "none"
+      }}>
+        {/* Self avatar */}
+        <div style={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          background: myBg,
+          color: myColor,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 600,
+          fontSize: 11,
+          flexShrink: 0,
+          marginBottom: 1,
+          border: `1.5px solid ${myColor}22`
+        }}>
+          {getInitial(me)}
         </div>
 
-        <div className="zc-comments-list">
-          {renderComments()}
-        </div>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          placeholder={replyTo ? `Reply to @${replyAuthor}...` : "Write a comment..."}
+          rows={1}
+          style={{
+            flex: 1,
+            border: "none",
+            outline: "none",
+            resize: "none",
+            fontFamily: "inherit",
+            fontSize: 13.5,
+            color: "#111827",
+            background: "transparent",
+            lineHeight: 1.5,
+            paddingTop: 4,
+          }}
+        />
+
+        <button
+          onClick={handleSubmit}
+          disabled={!text.trim() || submitting}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            background: text.trim() && !submitting ? "#6366F1" : "#E5E7EB",
+            border: "none",
+            color: text.trim() && !submitting ? "#fff" : "#9CA3AF",
+            fontSize: 15,
+            cursor: text.trim() && !submitting ? "pointer" : "default",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "background 0.15s, color 0.15s",
+          }}
+        >
+          ↑
+        </button>
       </div>
-    </>
+
+      {/* Comments list */}
+      <div>
+        {comments.length === 0 ? (
+          <p style={{ fontSize: 13, color: "#9CA3AF", textAlign: "center", padding: "16px 0" }}>
+            No comments yet — be the first!
+          </p>
+        ) : (
+          renderComments()
+        )}
+      </div>
+    </div>
   );
 }
