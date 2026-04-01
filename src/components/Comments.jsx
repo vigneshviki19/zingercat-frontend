@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ added
 import { getComments, addComment } from "../api";
 
 export default function Comments({ postId }) {
@@ -6,6 +7,8 @@ export default function Comments({ postId }) {
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [replyAuthor, setReplyAuthor] = useState("");
+
+  const navigate = useNavigate(); // ✅ added
 
   useEffect(() => {
     loadComments();
@@ -48,7 +51,13 @@ export default function Comments({ postId }) {
             <div className="zc-comment-avatar">{c.author?.[0]?.toUpperCase() || "🐱"}</div>
             <div className="zc-comment-body">
               <div className="zc-comment-header">
-                <span className="zc-comment-author">@{c.author}</span>
+                <span
+                  className="zc-comment-author"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate(`/profile/${c.author}`)} // ✅ added
+                >
+                  @{c.author}
+                </span>
                 {c.createdAt && (
                   <span className="zc-comment-time">
                     {new Date(c.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -78,7 +87,6 @@ export default function Comments({ postId }) {
           font-family: 'DM Sans', sans-serif;
         }
 
-        /* ---- input area ---- */
         .zc-comment-input-wrap {
           display: flex;
           flex-direction: column;
@@ -168,7 +176,6 @@ export default function Comments({ postId }) {
           box-shadow: 0 5px 14px rgba(244,133,74,0.4);
         }
 
-        /* ---- comment list ---- */
         .zc-comments-list {
           display: flex;
           flex-direction: column;
@@ -184,15 +191,11 @@ export default function Comments({ postId }) {
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        .zc-comment-nested {
-          position: relative;
-        }
         .zc-comment-thread-line {
           position: absolute;
           left: -12px; top: 0; bottom: 0;
           width: 2px;
           background: linear-gradient(to bottom, #FFD6A5, transparent);
-          border-radius: 1px;
         }
 
         .zc-comment-inner {
@@ -206,17 +209,11 @@ export default function Comments({ postId }) {
           border-radius: 50%;
           background: linear-gradient(135deg, #FFD6A5, #FFA86C);
           display: flex; align-items: center; justify-content: center;
-          font-size: 13px;
-          font-weight: 500;
-          color: #7A3D10;
-          flex-shrink: 0;
-          border: 1.5px solid rgba(244,133,74,0.2);
         }
 
         .zc-comment-body {
           flex: 1;
           background: #FFFAF4;
-          border: 1px solid rgba(255,214,165,0.5);
           border-radius: 0 14px 14px 14px;
           padding: 8px 12px;
         }
@@ -225,47 +222,24 @@ export default function Comments({ postId }) {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-bottom: 3px;
         }
+
         .zc-comment-author {
           font-size: 12px;
           font-weight: 500;
           color: #9B5B1A;
         }
-        .zc-comment-time {
-          font-size: 11px;
-          color: #C4A08A;
-        }
+
         .zc-comment-text {
           font-size: 13px;
-          color: #3D2010;
-          line-height: 1.55;
-          margin-bottom: 5px;
         }
-        .zc-comment-reply-btn {
-          font-size: 11px;
-          font-weight: 500;
-          color: #C4A08A;
-          cursor: pointer;
-          transition: color 0.15s;
-          letter-spacing: 0.02em;
-        }
-        .zc-comment-reply-btn:hover { color: #F4854A; }
 
-        .zc-no-comments {
-          text-align: center;
-          padding: 16px 0 4px;
-          font-size: 13px;
-          color: #C4A08A;
-          font-style: italic;
-          font-family: 'Fraunces', Georgia, serif;
-          font-weight: 300;
+        .zc-comment-reply-btn {
+          cursor: pointer;
         }
       `}</style>
 
       <div className="zc-comments-root">
-
-        {/* ---- input area ---- */}
         <div className="zc-comment-input-wrap">
           {replyTo && (
             <div className="zc-reply-chip">
@@ -273,6 +247,7 @@ export default function Comments({ postId }) {
               <span className="zc-reply-chip-cancel" onClick={cancelReply}>✕</span>
             </div>
           )}
+
           <div className="zc-comment-row">
             <div className="zc-comment-self-avatar">🐱</div>
             <textarea
@@ -280,17 +255,18 @@ export default function Comments({ postId }) {
               placeholder={replyTo ? `Reply to @${replyAuthor}...` : "Add a comment..."}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
             />
             <button className="zc-comment-submit" onClick={handleSubmit}>↑</button>
           </div>
         </div>
 
-        {/* ---- comments list ---- */}
         <div className="zc-comments-list">
-          {comments.filter(c => c.parentId === null).length === 0 && (
-            <p className="zc-no-comments">"No comments yet. Be the first meow! 🐾"</p>
-          )}
           {renderComments()}
         </div>
       </div>
