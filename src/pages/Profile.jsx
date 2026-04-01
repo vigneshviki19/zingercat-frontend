@@ -5,26 +5,41 @@ import {
   sendFriendRequest,
   getFriends,
   getFriendRequests,
-  getPosts
+  getPosts,
+  likePost
 } from "../api";
+import PostCard from "../components/PostCard";
+import Comments from "../components/Comments";
 
 const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+function getLikedFromStorage() {
+  try { return JSON.parse(localStorage.getItem("likedPosts") || "{}"); }
+  catch { return {}; }
+}
+function saveLikedToStorage(liked) {
+  try { localStorage.setItem("likedPosts", JSON.stringify(liked)); }
+  catch {}
+}
 
 export default function Profile() {
   const { username } = useParams();
   const navigate     = useNavigate();
   const myUsername   = localStorage.getItem("username");
 
-  const [profile, setProfile]     = useState(null);
-  const [status, setStatus]       = useState("none"); // none | requested | friends
-  const [userPosts, setUserPosts]  = useState([]);
-  const [showPosts, setShowPosts]  = useState(false);
+  const [profile, setProfile]           = useState(null);
+  const [status, setStatus]             = useState("none");
+  const [userPosts, setUserPosts]       = useState([]);
+  const [showPosts, setShowPosts]       = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);
+  const [openComments, setOpenComments] = useState(null);
+  const [likedPosts, setLikedPosts]     = useState(getLikedFromStorage);
 
   useEffect(() => {
     loadProfile();
     checkFriendStatus();
-    setShowPosts(false); // reset when navigating to different profile
+    setShowPosts(false);
+    setOpenComments(null);
   }, [username]);
 
   async function loadProfile() {
@@ -62,11 +77,63 @@ export default function Profile() {
       setShowPosts(true);
       const all = await getPosts();
       const filtered = (Array.isArray(all) ? all : []).filter(p => p.author === username);
+
+      // Merge server like state into localStorage
+      const stored = getLikedFromStorage();
+      const merged = { ...stored };
+      filtered.forEach(p => {
+        if (Array.isArray(p.likes) && p.likes.includes(myUsername)) {
+          merged[p._id] = true;
+        }
+      });
+      setLikedPosts(merged);
+      saveLikedToStorage(merged);
       setUserPosts(filtered);
     } catch (err) {
       console.error("USER POSTS ERROR:", err);
     } finally {
       setPostsLoading(false);
+    }
+  }
+
+  async function handleLike(postId) {
+    const alreadyLiked = likedPosts[postId] || false;
+
+    // Optimistic update
+    const newLikedMap = { ...likedPosts, [postId]: !alreadyLiked };
+    setLikedPosts(newLikedMap);
+    saveLikedToStorage(newLikedMap);
+
+    setUserPosts(prev => prev.map(p => {
+      if (p._id !== postId) return p;
+      const likes = Array.isArray(p.likes) ? p.likes : [];
+      return {
+        ...p,
+        likes: alreadyLiked
+          ? likes.filter(u => u !== myUsername)
+          : [...new Set([...likes, myUsername])]
+      };
+    }));
+
+    // API — no loadPosts after
+    try {
+      await likePost(postId);
+    } catch (err) {
+      console.error("LIKE ERROR:", err);
+      // Revert
+      const reverted = { ...likedPosts, [postId]: alreadyLiked };
+      setLikedPosts(reverted);
+      saveLikedToStorage(reverted);
+      setUserPosts(prev => prev.map(p => {
+        if (p._id !== postId) return p;
+        const likes = Array.isArray(p.likes) ? p.likes : [];
+        return {
+          ...p,
+          likes: alreadyLiked
+            ? [...new Set([...likes, myUsername])]
+            : likes.filter(u => u !== myUsername)
+        };
+      }));
     }
   }
 
@@ -127,22 +194,15 @@ export default function Profile() {
         .zpr-stat.active { background: linear-gradient(145deg, #FFF0DE, #FFE5C8); border-color: #F4854A; box-shadow: 0 4px 16px rgba(244,133,74,0.2); }
         .zpr-stat-num { font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 600; color: #F4854A; line-height: 1; margin-bottom: 4px; }
         .zpr-stat-label { font-size: 11px; color: #C4A08A; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
-
-        /* posts section */
         .zpr-posts-section { margin-top: 20px; }
         .zpr-posts-header { font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; color: #2C1A0E; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-        .zpr-post-card { background: rgba(255,255,255,0.85); border: 1px solid rgba(255,200,140,0.4); border-radius: 18px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(200,120,60,0.06); animation: fadeUp 0.3s cubic-bezier(.22,1,.36,1) both; }
-        .zpr-post-content { font-size: 14px; color: #3D2010; line-height: 1.65; margin-bottom: 10px; }
-        .zpr-post-image { width: 100%; border-radius: 10px; max-height: 300px; object-fit: cover; margin-bottom: 10px; }
-        .zpr-post-footer { display: flex; align-items: center; justify-content: space-between; }
-        .zpr-post-likes { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: #9B5B1A; font-weight: 500; }
-        .zpr-post-time { font-size: 11px; color: #C4A08A; }
-        .zpr-empty-posts { text-align: center; padding: 32px 20px; color: #C4A08A; }
-        .zpr-empty-posts-icon { font-size: 32px; margin-bottom: 8px; }
-        .zpr-empty-posts-text { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 14px; }
         .zpr-posts-spinner { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 24px; color: #B97B4A; font-size: 14px; }
         .zpr-spin { width: 18px; height: 18px; border: 2px solid #FFD6A5; border-top-color: #F4854A; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .zpr-empty-posts { text-align: center; padding: 32px 20px; color: #C4A08A; }
+        .zpr-empty-posts-icon { font-size: 32px; margin-bottom: 8px; }
+        .zpr-empty-posts-text { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 14px; }
+        .zpr-comments-wrap { margin-top: -10px; margin-bottom: 16px; background: rgba(255,255,255,0.78); border: 1px solid rgba(255,200,140,0.35); border-radius: 0 0 20px 20px; padding: 14px 20px; }
       `}</style>
 
       <div className="zpr-root">
@@ -194,16 +254,13 @@ export default function Profile() {
               )}
 
               <div className="zpr-stats">
-                {/* Friends stat → navigate to friends page */}
                 <div className="zpr-stat" onClick={() => navigate("/friends")}>
                   <div className="zpr-stat-num">{profile.friends?.length || 0}</div>
                   <div className="zpr-stat-label">👥 Friends</div>
                 </div>
-
-                {/* Posts stat → toggle posts below */}
                 <div className={`zpr-stat${showPosts ? " active" : ""}`} onClick={handlePostsClick}>
                   <div className="zpr-stat-num">{profile.postsCount || 0}</div>
-                  <div className="zpr-stat-label">📝 {showPosts ? "Hide Posts" : "Posts"}</div>
+                  <div className="zpr-stat-label">📝 {showPosts ? "Hide" : "Posts"}</div>
                 </div>
               </div>
             </div>
@@ -227,17 +284,19 @@ export default function Profile() {
                 </div>
               ) : (
                 userPosts.map(post => (
-                  <div key={post._id} className="zpr-post-card">
-                    {post.content && <p className="zpr-post-content">{post.content}</p>}
-                    {post.image && <img src={post.image} alt="post" className="zpr-post-image" />}
-                    <div className="zpr-post-footer">
-                      <span className="zpr-post-likes">
-                        ❤️ {Array.isArray(post.likes) ? post.likes.length : 0} likes
-                      </span>
-                      <span className="zpr-post-time">
-                        {new Date(post.createdAt).toLocaleString()}
-                      </span>
-                    </div>
+                  <div key={post._id}>
+                    <PostCard
+                      post={post}
+                      liked={likedPosts[post._id] || false}
+                      likeCount={Array.isArray(post.likes) ? post.likes.length : 0}
+                      onLike={handleLike}
+                      onCommentClick={(id) => setOpenComments(openComments === id ? null : id)}
+                    />
+                    {openComments === post._id && (
+                      <div className="zpr-comments-wrap">
+                        <Comments postId={post._id} />
+                      </div>
+                    )}
                   </div>
                 ))
               )}
