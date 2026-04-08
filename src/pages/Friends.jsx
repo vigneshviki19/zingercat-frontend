@@ -32,25 +32,25 @@ export default function Friends() {
         .zf-blob-1 { width: 500px; height: 500px; background: #FFD6A5; top: -100px; left: -150px; }
         .zf-blob-2 { width: 350px; height: 350px; background: #FFAAA5; bottom: -80px; right: -80px; }
         .zf-blob-3 { width: 220px; height: 220px; background: #A8DADC; top: 35%; left: 55%; opacity: 0.18; }
-        .zf-nav { position: sticky; top: 0; z-index: 100; background: rgba(253,248,242,0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,200,140,0.35); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 58px; }
+        .zf-nav { position: sticky; top: 0; z-index: 100; background: rgba(253,248,242,0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,200,140,0.2); }
         .zf-nav-brand { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; color: #2C1A0E; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .zf-nav-links { display: flex; align-items: center; gap: 4px; }
-        .zf-nav-item { display: flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #9B5B1A; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+        .zf-nav-item { display: flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #9B5B1A; cursor: pointer; transition: background 0.15s; }
         .zf-nav-item:hover { background: #FFF0DE; }
         .zf-nav-item-active { background: #FFF0DE; color: #F4854A; font-weight: 600; }
         .zf-main { position: relative; z-index: 1; max-width: 620px; margin: 28px auto; padding: 0 16px 60px; animation: fadeUp 0.45s cubic-bezier(.22,1,.36,1) both; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .zf-header-card { background: rgba(255,255,255,0.78); backdrop-filter: blur(14px); border: 1px solid rgba(255,200,140,0.4); border-radius: 20px; padding: 18px 20px; margin-bottom: 20px; box-shadow: 0 4px 24px rgba(200,120,60,0.08); display: flex; align-items: center; gap: 12px; }
-        .zf-header-icon { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #FFD6A5, #FFA86C); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .zf-header-card { background: rgba(255,255,255,0.78); backdrop-filter: blur(14px); border: 1px solid rgba(255,200,140,0.4); border-radius: 20px; padding: 18px 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(200,120,60,0.08); }
+        .zf-header-icon { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #FFD6A5, #FFA86C); display: flex; align-items: center; justify-content: center; font-size: 24px; }
         .zf-header-title { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; color: #2C1A0E; }
         .zf-header-sub { font-size: 12px; color: #C4A08A; font-style: italic; font-family: 'Fraunces', Georgia, serif; font-weight: 300; }
         .zf-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
         .zf-divider-line { flex: 1; height: 1px; background: #FFD6A5; opacity: 0.6; }
         .zf-divider-text { font-size: 11px; color: #C4A08A; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
         .zf-list { display: flex; flex-direction: column; gap: 10px; }
-        .zf-card { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.78); backdrop-filter: blur(12px); border: 1px solid rgba(255,200,140,0.35); border-radius: 20px; padding: 14px 16px; cursor: pointer; box-shadow: 0 4px 24px rgba(200,120,60,0.06); transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; animation: fadeUp 0.3s cubic-bezier(.22,1,.36,1) both; }
+        .zf-card { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.78); backdrop-filter: blur(12px); border: 1px solid rgba(255,200,140,0.35); border-radius: 20px; padding: 12px 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
         .zf-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,120,60,0.12); border-color: rgba(244,133,74,0.45); }
-        .zf-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #FFD6A5, #FFA86C); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; border: 2px solid rgba(244,133,74,0.2); }
+        .zf-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #FFD6A5, #FFA86C); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
         .zf-info { flex: 1; }
         .zf-username { font-size: 14px; font-weight: 500; color: #2C1A0E; }
         .zf-meta { font-size: 12px; color: #C4A08A; margin-top: 2px; font-style: italic; font-family: 'Fraunces', Georgia, serif; font-weight: 300; }
@@ -105,10 +105,10 @@ export default function Friends() {
               </div>
               <div className="zf-list">
                 {friends.map((friend) => (
-                  <div key={friend} className="zf-card" onClick={() => navigate(`/profile/${friend}`)}>
+                  <div key={friend.username} className="zf-card" onClick={() => navigate(`/profile/${friend.username}`)}>
                     <div className="zf-avatar">🐱</div>
                     <div className="zf-info">
-                      <div className="zf-username">@{friend}</div>
+                      <div className="zf-username">@{friend.username}</div>
                       <div className="zf-meta">"fellow campus cat"</div>
                     </div>
                     <span className="zf-arrow">›</span>
