@@ -24,6 +24,11 @@ export default function PrivateChat() {
       socket.off("receivePrivate");
     };
   }, [roomId]);
+  
+  useEffect(() => {
+    // 🔥 Tell backend sender is online
+    socket.emit("userOnline", sender);
+  }, [sender]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
